@@ -2,20 +2,21 @@
 #include <WiFiUdp.h>
 
 #include "AnalogLight.h"
+#include "NeoPixelLight.h"
 #include "LightNode.h"
 
-AnalogLight strip(2, 4, 5);
-Light* lights[] = {&strip};
+AnalogLight analog{"Bedroom", 2, 4, 5};
+NeoPixelLight digital{"Test_Digital", 300, 0};
+Light* lights[] = {&analog, &digital};
 
-LightNode node("Test", lights, 1);
-
+LightNode node("ESP", lights, 2);
 
 void setup() {
   Serial.begin(115200);
 
   Serial.print("\nConnecting to AP");
   
-  WiFi.begin("108net", "3ricn3t1");
+  WiFi.begin(SSID, PSK);
 
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -23,7 +24,8 @@ void setup() {
   }
   Serial.println("done");
 
-  strip.begin();
+  analog.begin();
+  digital.begin();
 
   Serial.print("Starting LightNode...");
   node.begin();

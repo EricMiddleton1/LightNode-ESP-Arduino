@@ -1,5 +1,4 @@
-#ifndef PACKET_H
-#define PACKET_H
+#pragma once
 
 #include <Arduino.h>
 #include <WiFiUdp.h>
@@ -7,22 +6,18 @@
 class Packet {
 public:
   enum class Type {
-    Ping = 0,
-    Init,
-    Info,
-    Update,
-    Alive,
+    NodeInfo = 0,
+    NodeInfoResponse,
+    LightInfo,
+    LightInfoResponse,
     TurnOn,
     TurnOff,
-    SetBrightness,
-    SetColorAll,
-
-    Ack = 0xFE,
-    Nack = 0xFF
+    UpdateColor,
+    ChangeBrightness
   };
   
   Packet();
-  Packet(Type type, const byte data[], int length);
+  Packet(Type type, uint8_t lightID, const byte data[], int length);
   Packet(WiFiUDP&);
   ~Packet();
 
@@ -31,19 +26,19 @@ public:
   operator bool() const;
 
   Type getType() const;
+  uint8_t getLightID() const;
   String getTypeString() const;
   const byte* getData() const;
   int getDataLength() const;
   
 private:
-  const byte HEADER[2] = {0xAA, 0x55};
-  const char* TYPE_NAMES[9] = {"ping", "init", "info", "update", "alive", "turnon", "turnoff", "setbrightness", "setcolorall"};
+  const char* TYPE_NAMES[8] = {"NodeInfo", "NodeInfoResponse", "LightInfo", "LightInfoResponse", "TurnOn", "TurnOff", "UpdateColor",
+    "ChangeBrightness"};
   
   bool valid;
 
   Type type;
+  uint8_t lightID;
   byte *data;
   int dataLength;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef ANALOG_LIGHT_H
-#define ANALOG_LIGHT_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -7,18 +6,14 @@
 
 class AnalogLight : public Light {
 public:
-  AnalogLight(byte pinR, byte pinG, byte pinB);
+  AnalogLight(const String& name, byte pinR, byte pinG, byte pinB);
 
   void begin();
   void end();
 
-  virtual void set(const Color[]) override;
-  virtual void setAll(Color) override;
-
+  virtual void update() override;
 private:
   void setLED(byte pin, byte value);
   
   byte pinR, pinG, pinB;
 };
-
-#endif

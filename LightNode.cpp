@@ -1,5 +1,7 @@
 #include "LightNode.h"
 
+#include <Arduino.h>
+
 extern "C" {
   #include "mem.h"
 }
@@ -9,37 +11,11 @@ bool LightNode::Client::operator==(const Client& other) const {
 }
 
 LightNode::LightNode(const String& _name, Light* _lights[], int _lightCount)
-  : connected{false}
-  , name{_name}
-  , lightCount{_lightCount}
-  , analogCount{0}
-  , digitalCount{0}
-  , matrixCount{0} {
+  : name{_name}
+  , lightCount{_lightCount} {
 
   lights = static_cast<Light**>(os_malloc(sizeof(Light*) * lightCount));
   memcpy(lights, _lights, sizeof(Light*)*lightCount);
-  
-  for(int i = 0; i < lightCount; ++i) {
-    switch(lights[i]->getType()) {
-      case Light::Type::Analog:
-        analogCount++;
-      break;
-
-      case Light::Type::Digital:
-        digitalCount++;
-      break;
-
-      case Light::Type::Matrix:
-        matrixCount++;
-      break;
-    }
-  }
-
-  os_timer_disarm(&connectTimer);
-  os_timer_setfn(&connectTimer, [](void* self) { reinterpret_cast<LightNode*>(self)->cbConnectTimer(); }, this);
-
-  os_timer_disarm(&aliveTimer);
-  os_timer_setfn(&aliveTimer, [](void* self) { reinterpret_cast<LightNode*>(self)->cbAliveTimer(); }, this);
 }
 
 LightNode::~LightNode() {
@@ -70,53 +46,130 @@ void LightNode::run() {
 }
 
 void LightNode::processPacket(Client from, const Packet& p) {
-  bool fromClient = connected && (from == client);
-
-  Serial.print("Received packet of type '"); Serial.print(p.getTypeString()); Serial.println("'");
-
-  switch(p.getType()) {
-    case Packet::Type::Ping: {
-      //TODO: Support digital and matrix lights
-
-      buffer[0] = analogCount;
-      buffer[1] = digitalCount;
-      buffer[2] = matrixCount;
-      memcpy(buffer+3, name.c_str(), name.length());
-      
-      Packet response{Packet::Type::Info, buffer, 3 + name.length()};
-
-      response.send(socket, from.addr, from.port);
-    }
-    break;
-
-    case Packet::Type::Update:
-      if( !connected || (connected && fromClient) ) {
-        auto* data = p.getData();
-        
-        for(int i = 0; i < lightCount; ++i) {
-          auto light = lights[i];
-          
-          auto* colors = static_cast<Color*>(os_malloc(sizeof(Color) * light->getCount()));
-
-          for(int j = 0; j < light->getCount(); ++j) {
-            int index = 3*j;
-            colors[j] = {data[index], data[index+1], data[index+2]};
-          }
-
-          light->set(colors);
-
-          os_free(colors);
-        }
-      }
-     break;
+  auto lightID = p.getLightID();
+  if(lightID >= lightCount) {
+    Serial.print("LightNode::processPacket: Invalid light ID: ");
+    Serial.println(lightID);
   }
-}
-
-void LightNode::cbConnectTimer() {
+  else {
+    auto& light = *lights[lightID];
+    
+    switch(p.getType()) {
+      case Packet::Type::NodeInfo: {
+        buffer[0] = lightCount;
+        memcpy(buffer+1, name.c_str(), name.length());
+        
+        Packet response{Packet::Type::NodeInfoResponse, 0, buffer, 1 + name.length()};
   
-}
-
-void LightNode::cbAliveTimer() {
+        response.send(socket, from.addr, from.port);
+      }
+      break;
   
+      case Packet::Type::LightInfo: {
+        auto count = light.getCount();
+        auto lightName = light.getName();
+        
+        buffer[0] = (count >> 8) && 0xFF;
+        buffer[1] = count & 0xFF;
+        memcpy(buffer+2, lightName.c_str(), lightName.length());
+      
+        Packet response{Packet::Type::LightInfoResponse, lightID, buffer, 2 + lightName.length()};
+
+        response.send(socket, from.addr, from.port);
+      }
+      break;
+  
+      case Packet::Type::TurnOn:
+        for(uint16_t i = 0; i < light.getCount(); ++i) {
+          light[i].turnOn();
+        }
+
+        light.update();
+      break;
+
+      case Packet::Type::TurnOff:
+        for(uint16_t i = 0; i < light.getCount(); ++i) {
+          light[i].turnOff();
+        }
+
+        light.update();
+      break;
+
+      case Packet::Type::UpdateColor: {
+        auto size = p.getDataLength();
+        auto data = p.getData();
+        
+        auto colorMask = data[0];
+
+        bool useHue = colorMask & 0x4,
+          useSat = colorMask & 0x2,
+          useVal = colorMask & 0x1;
+
+        int stride = useHue + useSat + useVal;
+        if(((size-1) % stride) != 0) {
+          Serial.println("[Error] UpdateColor: Invalid size");
+        }
+        else {
+          if(size == (1+stride)) {
+            int offset = 1;
+            
+            if(useHue) {
+              for(uint16_t i = 0; i < light.getCount(); ++i) {
+                light[i].setHue(data[offset]);
+              }
+              ++offset;
+            }
+
+            if(useSat) {
+              for(uint16_t i = 0; i < light.getCount(); ++i) {
+                light[i].setSat(data[offset]);
+              }
+              ++offset;
+            }
+
+            if(useVal) {
+              for(uint16_t i = 0; i < light.getCount(); ++i) {
+                light[i].setVal(data[offset]);
+              }
+              ++offset;
+            }
+          }
+          else {
+            if(size != (3*light.getCount()+1)) {
+              Serial.print("[Error] UpdateColor: Invalid size:");
+              Serial.println(size);
+            }
+            else {
+              int offset = 1;
+              
+              for(uint16_t i = 0; i < light.getCount(); ++i) {
+                if(useHue)
+                  light[i].setHue(data[offset++]);
+                if(useSat)
+                  light[i].setSat(data[offset++]);
+                if(useVal)
+                  light[i].setVal(data[offset++]);
+              }
+            }
+          }
+        }
+
+        light.update();
+      }
+      break;
+
+      case Packet::Type::ChangeBrightness: {
+        int delta = 255*static_cast<int>(static_cast<int8_t>(p.getData()[0]))/100;
+        uint8_t val = constrain(light[0].getVal() + delta, 0, 255);
+
+        for(uint16_t i = 0; i < light.getCount(); ++i) {
+          light[i].setVal(val);
+        }
+
+        light.update();
+      }
+      break;      
+    }
+  }
 }
 

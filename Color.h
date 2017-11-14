@@ -1,43 +1,39 @@
-#ifndef COLOR_H
-#define COLOR_H
+#pragma once
 
-#include <Arduino.h>
+#include <cstdint>
 
 class Color {
 public:
   Color();
-  Color(byte r, byte g, byte b);
+  Color(uint8_t r, uint8_t g, uint8_t b);
 
-  Color& operator=(const Color& c);
+  Color operator=(const Color& c);
   bool operator!=(const Color& rhs) const;
   bool operator==(const Color& rhs) const;
-  Color operator*(float rhs) const;
+  Color operator*(double rhs) const;
 
-  String toString() const;
+  uint8_t getRed() const;
+  uint8_t getGreen() const;
+  uint8_t getBlue() const;
 
-  byte getRed() const;
-  byte getGreen() const;
-  byte getBlue() const;
+  void setRed(uint8_t red);
+  void setGreen(uint8_t green);
+  void setBlue(uint8_t blue);
 
-  void setRed(byte red);
-  void setGreen(byte green);
-  void setBlue(byte blue);
+  uint8_t getHue() const;
+  uint8_t getSat() const;
+  uint8_t getVal() const;
 
-  float getHue() const;
-  float getHSLSaturation() const;
-  float getLightness() const;
+  Color filter(const Color&, double);
 
-  float getHSVSaturation() const;
-  float getValue() const;
+  void gammaCorrect(double gamma);
 
-  Color filter(const Color&, float) const;
-  Color gammaCorrect(float gamma) const;
-
-  static Color HSL(float hue, float saturation, float lightness);
-  static Color HSV(float hue, float saturation, float value);
+  static Color HSV(uint8_t hue, uint8_t sat, uint8_t val);
 
 private:
-  byte r, g, b;
-};
+  float getHueF() const;
+  float getSatF() const;
+  float getValF() const;
 
-#endif
+  uint8_t r, g, b;
+};

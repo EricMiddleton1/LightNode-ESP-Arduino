@@ -1,29 +1,28 @@
-#ifndef LIGHT_H
-#define LIGHT_H
+#pragma once
 
-#include "Color.h"
+#include <cstdint>
+#include <Arduino.h>
+
+#include "LED.h"
 
 class Light {
 public:
-  enum class Type {
-    Analog = 0,
-    Digital,
-    Matrix
-  };
+  Light(const String& name, uint16_t count);
+  virtual ~Light();
 
-  Light(Type type, int count);
+  Light(const Light& other) = delete;
 
-  Type getType() const;
+  LED& operator[](uint16_t index);
+  const LED& operator[](uint16_t index) const;
+
   int getCount() const;
-  
-  virtual void set(const Color[]) = 0;
-  virtual void setAll(Color) = 0;
-  
+  String getName() const;
+
+  virtual void update() = 0;
   
 protected:
-  Type type;
-  int count;
+  String name;
+  
+  LED* leds;
+  uint16_t count;
 };
-
-
-#endif
