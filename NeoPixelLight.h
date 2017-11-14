@@ -8,7 +8,7 @@
 
 class NeoPixelLight : public Light {
 public:
-  NeoPixelLight(const String& name, uint16_t ledCount, uint8_t pin);
+  NeoPixelLight(const String& name, uint16_t ledCount, uint8_t pin, neoPixelType colorOrder = NEO_GRB);
 
   void begin();
 

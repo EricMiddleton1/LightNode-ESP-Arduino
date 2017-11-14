@@ -133,6 +133,11 @@ void LightNode::processPacket(Client from, const Packet& p) {
               }
               ++offset;
             }
+            else {
+              for(uint16_t i = 0; i < light.getCount(); ++i) {
+                light[i].turnOn();
+              }
+            }
           }
           else {
             if(size != (3*light.getCount()+1)) {
@@ -149,6 +154,9 @@ void LightNode::processPacket(Client from, const Packet& p) {
                   light[i].setSat(data[offset++]);
                 if(useVal)
                   light[i].setVal(data[offset++]);
+
+                if(!useVal && !light[i].isOn())
+                  light[i].turnOn();
               }
             }
           }
