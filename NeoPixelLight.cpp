@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-NeoPixelLight::NeoPixelLight(const String& _name, uint16_t _ledCount, uint8_t _pin, neoPixelType _colorOrder)
+NeoPixelLight::NeoPixelLight(const std::string& _name, uint16_t _ledCount, uint8_t _pin, neoPixelType _colorOrder)
   : Light{_name, _ledCount}
   , strip{_ledCount, _pin, _colorOrder | NEO_KHZ800} {
 
@@ -11,18 +11,17 @@ NeoPixelLight::NeoPixelLight(const String& _name, uint16_t _ledCount, uint8_t _p
   }
 }
 
-void NeoPixelLight::begin() {
+void NeoPixelLight::start() {
   strip.begin();
   strip.show();
 }
 
-void NeoPixelLight::update() {
+void NeoPixelLight::display() {
   for(int i = 0; i < strip.numPixels(); ++i) {
-    auto c = leds[i].getColor();
+    auto c = colors[i];
     
     strip.setPixelColor(i, gammaTable[c.getRed()], gammaTable[c.getGreen()], gammaTable[c.getBlue()]);
   }
-  Serial.println();
   
   strip.show();
 }

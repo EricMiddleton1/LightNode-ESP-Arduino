@@ -2,17 +2,17 @@
 
 #include <cstdint>
 
-#include <Adafruit_NeoPixel.h>
-
 #include "Light.h"
+
+#include <Adafruit_NeoPixel.h>
 
 class NeoPixelLight : public Light {
 public:
-  NeoPixelLight(const String& name, uint16_t ledCount, uint8_t pin, neoPixelType colorOrder = NEO_GRB);
+  NeoPixelLight(const std::string& name, uint16_t ledCount, uint8_t pin, neoPixelType colorOrder = NEO_GRB);
 
-  void begin();
+  void start();
 
-  void update() override;
+  void display() override;
 
 private:
   const float GAMMA = 2.2f;

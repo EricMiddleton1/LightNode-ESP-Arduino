@@ -1,36 +1,43 @@
 #include "Light.h"
 
+#include "LightAdapter.h"
+
+#include <Arduino.h>
+
 extern "C" {
   #include "mem.h"
 }
 
-Light::Light(const String& _name, uint16_t _count)
+Light::Light(const std::string& _name, uint16_t _count)
   : name{_name}
-  , count{_count} {
+  , colors(_count) {
 
-  leds = static_cast<LED*>(os_malloc(count * sizeof(LED)));
-  if(leds == nullptr) {
-    count = 0;
-  }
+  Serial.print("new [vector] (");
+  Serial.print(sizeof(Color)*colors.size());
+  Serial.println(" bytes)");
+
+  Serial.print("new (");
+  Serial.print(sizeof(LightAdapter));
+  Serial.println(" bytes)");
+  adapter = new LightAdapter(*this, LightAdapter::Type::Linear);
 }
 
 Light::~Light() {
-  os_free(leds);
+  Serial.print("delete (");
+  Serial.print(sizeof(LightAdapter));
+  Serial.println(" bytes)");
+  delete adapter;
 }
 
-LED& Light::operator[](uint16_t index) {
-  return leds[index];
+int Light::size() const {
+  return colors.size();
 }
 
-const LED& Light::operator[](uint16_t index) const {
-  return leds[index];
-}
-
-int Light::getCount() const {
-  return count;
-}
-
-String Light::getName() const {
+std::string Light::getName() const {
   return name;
+}
+
+LightAdapter* Light::getAdapter() {
+  return adapter;
 }
 

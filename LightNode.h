@@ -1,15 +1,19 @@
 #pragma once
 
 #include "Light.h"
-#include "Packet.h"
+#include "EffectManager.h"
 
 #include <cstdint>
-#include <WiFiUdp.h>
+#include <ESPAsyncUDP.h>
+
+extern "C" {
+  #include "os_type.h"
+}
 
 class LightNode {
 public:
 
-  LightNode(const String& name, Light* lights[], int lightCount);
+  LightNode(const String& name, Light* lights[], int lightCount, EffectManager& manager);
   ~LightNode();
   
   void begin();
@@ -19,21 +23,41 @@ public:
   
 private:
   const uint16_t PORT = 5492;
-  static const int BUFFER_SIZE = 1024;
+  static const int BUFFER_SIZE = 128;
+  static const int REMOTE_TIMEOUT = 1000;
 
-  struct Client {
-    IPAddress addr;
-    uint16_t port;
+  enum class PacketType {
+    NodeInfo = 0,
+    NodeInfoResponse,
+    LightInfo,
+    LightInfoResponse,
+    TurnOn,
+    TurnOff,
+    SetBrightness,
+    SetColor,
+    ChangeBrightness,
+    UpdateColor,
 
-    bool operator==(const Client& other) const;
+    COUNT
   };
 
-  void processPacket(Client, const Packet&);
+  bool parsePacket(AsyncUDPPacket& packet, uint8_t& lightID, PacketType& type, uint8_t** data, int& length);
+  void processPacket(AsyncUDPPacket packet);
+  void cbRemoteTimer();
   
-  WiFiUDP socket;
-  byte buffer[BUFFER_SIZE];
+  AsyncUDP socket;
+  uint8_t buffer[BUFFER_SIZE];
+
+  const int requiredDataLength[static_cast<int>(PacketType::COUNT)] = {0, 0, 0, 0, 1, 1, 2, 3, 2, -1};
 
   String name;
   Light** lights;
   int lightCount;
+
+  EffectManager& manager;
+  int singleColorEffect;
+  int remoteUpdateEffect;
+  int prevEffect;
+
+  //os_timer_t remoteTimer;
 };

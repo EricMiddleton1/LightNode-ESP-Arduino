@@ -6,12 +6,12 @@
 
 class AnalogLight : public Light {
 public:
-  AnalogLight(const String& name, byte pinR, byte pinG, byte pinB);
+  AnalogLight(const std::string& name, byte pinR, byte pinG, byte pinB);
 
-  void begin();
-  void end();
+  void start();
+  void stop();
 
-  virtual void update() override;
+  virtual void display() override;
 private:
   void setLED(byte pin, byte value);
   

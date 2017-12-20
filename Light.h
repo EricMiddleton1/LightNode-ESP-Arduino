@@ -1,28 +1,33 @@
 #pragma once
 
+#include <vector>
+#include <string>
 #include <cstdint>
-#include <Arduino.h>
 
-#include "LED.h"
+#include "Color.h"
+
+class LightAdapter;
 
 class Light {
 public:
-  Light(const String& name, uint16_t count);
+  Light(const std::string& name, uint16_t count);
   virtual ~Light();
 
   Light(const Light& other) = delete;
 
-  LED& operator[](uint16_t index);
-  const LED& operator[](uint16_t index) const;
+  int size() const;
+  std::string getName() const;
 
-  int getCount() const;
-  String getName() const;
+  LightAdapter* getAdapter();
 
-  virtual void update() = 0;
+  virtual void display() = 0;
   
 protected:
-  String name;
+  friend class LightAdapter;
   
-  LED* leds;
-  uint16_t count;
+  std::string name;
+  
+  std::vector<Color> colors;
+
+  LightAdapter* adapter;
 };
