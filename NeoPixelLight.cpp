@@ -2,27 +2,68 @@
 
 #include <cmath>
 
-NeoPixelLight::NeoPixelLight(const std::string& _name, uint16_t _ledCount, uint8_t _pin, neoPixelType _colorOrder)
+NeoPixelLight::NeoPixelLight(const std::string& _name, uint16_t _ledCount, ColorOrder _colorOrder)
   : Light{_name, _ledCount}
-  , strip{_ledCount, _pin, _colorOrder | NEO_KHZ800} {
+  , colorOrder{_colorOrder} {
+
+  switch(colorOrder) {
+    case ColorOrder::RGB:
+      strip.rgb = new NeoPixelBus<NeoRgbFeature, Neo800KbpsMethod>(_ledCount);
+    break;
+
+    case ColorOrder::GRB:
+      strip.grb = new NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>(_ledCount);
+    break;
+  }
 
   for(int i = 0; i < 256; ++i) {
     gammaTable[i] = std::pow(i / 255.f, GAMMA) * 255.f + 0.5f;
   }
 }
 
+NeoPixelLight::~NeoPixelLight() {
+  switch(colorOrder) {
+    case ColorOrder::RGB:
+      delete strip.rgb;
+    break;
+
+    case ColorOrder::GRB:
+      delete strip.grb;
+    break;
+  }
+}
+
 void NeoPixelLight::start() {
-  strip.begin();
-  strip.show();
+  switch(colorOrder) {
+    case ColorOrder::RGB:
+      Serial.println("start() RGB");
+      strip.rgb->Begin();
+      strip.rgb->Show();
+    break;
+
+    case ColorOrder::GRB:
+      Serial.println("start() RGB");
+      strip.grb->Begin();
+      strip.grb->Show();
+    break;
+  }
+
+  Serial.println("start() done");
 }
 
 void NeoPixelLight::display() {
-  for(int i = 0; i < strip.numPixels(); ++i) {
-    auto c = colors[i];
-    
-    strip.setPixelColor(i, gammaTable[c.getRed()], gammaTable[c.getGreen()], gammaTable[c.getBlue()]);
+  switch(colorOrder) {
+    case ColorOrder::RGB:
+      Serial.println("display() RGB");
+      display(strip.rgb);
+    break;
+
+    case ColorOrder::GRB:
+      Serial.println("display() GRB");
+      display(strip.grb);
+    break;
   }
-  
-  strip.show();
+
+  Serial.println("display() done");
 }
 

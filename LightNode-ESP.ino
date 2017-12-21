@@ -28,7 +28,7 @@ void setup() {
   //effectManager.addEffect(remoteUpdateEffect);
   //effectManager.addEffect(twinkleEffect);
 
-  digital = new NeoPixelLight("Test", 300, 2, NEO_RGB);
+  digital = new NeoPixelLight("Test", 100, NeoPixelLight::ColorOrder::RGB);
   lights[0] = digital;
   remoteUpdateEffect = new RemoteUpdateEffect();
   effectManager = new EffectManager(*lights[0]->getAdapter());
