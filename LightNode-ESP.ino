@@ -11,38 +11,27 @@
 #include "TwinkleEffect.h"
 
 //AnalogLight analog{"Bedroom", 2, 4, 5};
-NeoPixelLight* digital;
-Light* lights[1];
+NeoPixelLight digital("Test", 256, NeoPixelLight::ColorOrder::GRB);
+Light* lights[] = {&digital};
 
-EffectManager* effectManager;//{*lights[0]->getAdapter()};
-//SingleColorEffect singleColorEffect;
-RemoteUpdateEffect* remoteUpdateEffect;
-//TwinkleEffect twinkleEffect;
+EffectManager effectManager{*lights[0]->getAdapter()};
+SingleColorEffect singleColorEffect;
+RemoteUpdateEffect remoteUpdateEffect;
+TwinkleEffect twinkleEffect;
 
-LightNode* node;
+LightNode node("Outside", lights, 1, effectManager);
 
 void setup() {
   Serial.begin(115200);
 
-  //effectManager.addEffect(singleColorEffect);
-  //effectManager.addEffect(remoteUpdateEffect);
-  //effectManager.addEffect(twinkleEffect);
-
-  digital = new NeoPixelLight("Test", 100, NeoPixelLight::ColorOrder::RGB);
-  lights[0] = digital;
-  remoteUpdateEffect = new RemoteUpdateEffect();
-  effectManager = new EffectManager(*lights[0]->getAdapter());
-  effectManager->addEffect(*remoteUpdateEffect);
-  
-
-  Serial.print("new (");
-  Serial.print(sizeof(LightNode));
-  Serial.println(" bytes)");
-  node = new LightNode("Outside", lights, 1, *effectManager);
+  effectManager.addEffect(singleColorEffect);
+  effectManager.addEffect(remoteUpdateEffect);
+  effectManager.addEffect(twinkleEffect);
 
   Serial.print("\nConnecting to AP");
   
-  WiFi.begin("108net", "3ricn3t1");
+  //WiFi.begin("108net", "3ricn3t1");
+  WiFi.begin("Eric is Awesome", "ericeric");
 
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -51,28 +40,19 @@ void setup() {
   Serial.println("done");
 
   //analog.start();
-  digital->start();
+  digital.start();
 
   Serial.print("Starting LightNode...");
-  node->begin();
+  node.begin();
   Serial.println("done");
 
-  //effectManager.selectEffect(effectManager.findEffect("Twinkle"));
+  effectManager.selectEffect(effectManager.findEffect("Twinkle"));
 }
 
 unsigned long nextTime = 0;
 
 void loop() {
-  if(Serial.read() != -1) {
-    node->end();
-    delete node;
-
-    delete effectManager;
-    delete remoteUpdateEffect;
-    delete digital;
-
-    Serial.println("[Info] Stopped everything and deleted all the things");
-  }
+  node.run();
   
   auto curTime = millis();
   if(curTime >= nextTime) {

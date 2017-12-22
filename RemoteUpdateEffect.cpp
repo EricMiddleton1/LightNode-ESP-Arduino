@@ -15,7 +15,7 @@ const Color& RemoteUpdateEffect::operator[](int index) const {
 
 void RemoteUpdateEffect::update(uint8_t huePeriod, uint8_t satPeriod, uint8_t valPeriod) {
   if(adapter != nullptr) {
-    adapter->display();
+    //adapter->display();
   }
 }
 

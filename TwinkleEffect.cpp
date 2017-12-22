@@ -63,7 +63,5 @@ void TwinkleEffect::run() {
 
     (*adapter)[i] = Color::HSV(twinkles[i].hue, 255, value);
   }
-
-  adapter->display();
 }
 

@@ -17,11 +17,13 @@ LightNode::LightNode(const String& _name, Light* _lights[], int _lightCount, Eff
   , manager(_manager)
   , prevEffect{manager.getCurrentEffect() - manager.begin()} {
 
-  Serial.print("new (");
-  Serial.print(sizeof(Light*) * lightCount);
-  Serial.println(" bytes)");
   lights = new Light*[lightCount];
   memcpy(lights, _lights, sizeof(Light*)*lightCount);
+
+  lightUpdate = new bool[lightCount];
+  for(int i = 0; i < lightCount; ++i) {
+    lightUpdate[i] = false;
+  }
 
   auto found = manager.findEffect("Single Color");
   if(found == manager.end()) {
@@ -41,13 +43,14 @@ LightNode::LightNode(const String& _name, Light* _lights[], int _lightCount, Eff
     remoteUpdateEffect = found - manager.begin();
   }
 
-  //os_timer_setfn(&remoteTimer, [](void* lightNode) { reinterpret_cast<LightNode*>(lightNode)->cbRemoteTimer(); }, this);
+  os_timer_setfn(&remoteTimer, [](void* lightNode) { reinterpret_cast<LightNode*>(lightNode)->cbRemoteTimer(); }, this);
 }
 
 LightNode::~LightNode() {
   end();
 
   delete[] lights;
+  delete[] lightUpdate;
 }
 
 void LightNode::begin() {
@@ -64,6 +67,9 @@ void LightNode::end() {
 }
 
 void LightNode::run() {
+  for(int i = 0; i < lightCount; ++i) {
+    lights[i]->update();
+  }
 }
 
 bool LightNode::parsePacket(AsyncUDPPacket& packet, uint8_t& lightID, PacketType& type, uint8_t** data, int& length) {
@@ -199,8 +205,8 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
           prevEffect = curEffect;
           manager.selectEffect(manager.begin() + remoteUpdateEffect);
         }
-        //os_timer_disarm(&remoteTimer);
-        //os_timer_arm(&remoteTimer, REMOTE_TIMEOUT, 0);
+        os_timer_disarm(&remoteTimer);
+        os_timer_arm(&remoteTimer, REMOTE_TIMEOUT, 0);
         auto& effect = *static_cast<RemoteUpdateEffect*>(*manager.getCurrentEffect());
 
         for(int i = 0; i < effect.size(); ++i) {

@@ -19,6 +19,7 @@ int LightAdapter::size() const {
 }
 
 Color& LightAdapter::operator[](int index) {
+  light.changed = true;
   return light.colors[index];
 }
 
@@ -27,12 +28,9 @@ const Color& LightAdapter::operator[](int index) const {
 }
 
 void LightAdapter::setAll(const Color& c) {
+  light.changed = true;
   for(auto& color : light.colors) {
     color = c;
   }
-}
-
-void LightAdapter::display() {
-  light.display();
 }
 

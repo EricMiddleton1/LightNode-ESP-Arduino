@@ -20,14 +20,17 @@ public:
 
   LightAdapter* getAdapter();
 
-  virtual void display() = 0;
+  void update();
   
 protected:
   friend class LightAdapter;
+
+  virtual void display() = 0;
   
   std::string name;
   
   std::vector<Color> colors;
+  bool changed;
 
   LightAdapter* adapter;
 };

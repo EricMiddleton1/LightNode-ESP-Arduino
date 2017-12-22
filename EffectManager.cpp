@@ -17,7 +17,7 @@ EffectManager::EffectManager(LightAdapter& _light)
   Serial.print(sizeof(Effect*)*effects.size());
   Serial.println(" bytes)");
 
-  //os_timer_setfn(&runTimer, [](void* manager) { reinterpret_cast<EffectManager*>(manager)->cbRunTimer(); }, this);
+  os_timer_setfn(&runTimer, [](void* manager) { reinterpret_cast<EffectManager*>(manager)->cbRunTimer(); }, this);
 }
 
 void EffectManager::updateLight(LightAdapter& _light) {
@@ -38,7 +38,7 @@ void EffectManager::addEffect(Effect& effect) {
 void EffectManager::selectEffect(const iterator& itr) {
   effects[activeEffect]->stop();
 
-  //os_timer_disarm(&runTimer);
+  os_timer_disarm(&runTimer);
   
   activeEffect = itr - effects.begin();
   effects[activeEffect]->start(*light);
@@ -46,7 +46,7 @@ void EffectManager::selectEffect(const iterator& itr) {
   auto period = effects[activeEffect]->getUpdatePeriod();
 
   if(period > 0) {
-    //os_timer_arm(&runTimer, period, 1);
+    os_timer_arm(&runTimer, period, 1);
   }
 }
 

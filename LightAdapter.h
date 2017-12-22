@@ -23,8 +23,6 @@ public:
 
   void setAll(const Color& c);
 
-  void display();
-
 private:
   Light& light;
   Type lightType;

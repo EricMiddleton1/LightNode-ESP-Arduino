@@ -60,7 +60,6 @@ void SingleColorEffect::changeBrightness(uint8_t delta) {
 void SingleColorEffect::display() {
   if(adapter != nullptr) {
     adapter->setAll(isOn ? Color::HSV(hue, sat, val) : Color{});
-    adapter->display();
   }
 }
 

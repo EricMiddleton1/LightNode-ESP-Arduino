@@ -54,6 +54,6 @@ private:
 
   LightAdapter* light;
 
-  //os_timer_t runTimer;
+  os_timer_t runTimer;
 };
 

@@ -52,6 +52,7 @@ private:
 
   String name;
   Light** lights;
+  bool* lightUpdate;
   int lightCount;
 
   EffectManager& manager;
@@ -59,5 +60,5 @@ private:
   int remoteUpdateEffect;
   int prevEffect;
 
-  //os_timer_t remoteTimer;
+  os_timer_t remoteTimer;
 };

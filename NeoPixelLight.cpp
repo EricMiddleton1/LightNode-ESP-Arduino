@@ -54,16 +54,12 @@ void NeoPixelLight::start() {
 void NeoPixelLight::display() {
   switch(colorOrder) {
     case ColorOrder::RGB:
-      Serial.println("display() RGB");
       display(strip.rgb);
     break;
 
     case ColorOrder::GRB:
-      Serial.println("display() GRB");
       display(strip.grb);
     break;
   }
-
-  Serial.println("display() done");
 }
 
