@@ -37,7 +37,7 @@ bool Effect::isSupported(const LightAdapter& light) const {
 }
 
 int Effect::size() const {
-  return adapter->size();
+  return (adapter == nullptr) ? 0 : adapter->size();
 }
 
 void Effect::start(LightAdapter& _adapter) {

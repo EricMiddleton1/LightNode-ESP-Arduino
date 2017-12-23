@@ -11,20 +11,22 @@ public:
     Matrix
   };
   
-  LightAdapter(Light& light, Type type);
+  LightAdapter(Light& light, Type type = Type::Linear);
   virtual ~LightAdapter();
 
   Type type() const;
   
   int size() const;
 
-  Color& operator[](int index);
-  const Color& operator[](int index) const;
+  virtual Color& operator[](int index);
+  virtual const Color& operator[](int index) const;
 
   void setAll(const Color& c);
 
-private:
+protected:
   Light& light;
+
+private:
   Type lightType;
 };
 

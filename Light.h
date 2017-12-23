@@ -7,10 +7,11 @@
 #include "Color.h"
 
 class LightAdapter;
+class MatrixAdapter;
 
 class Light {
 public:
-  Light(const std::string& name, uint16_t count);
+  Light(const std::string& name, uint16_t count, LightAdapter* customAdapter = nullptr);
   virtual ~Light();
 
   Light(const Light& other) = delete;
@@ -24,6 +25,7 @@ public:
   
 protected:
   friend class LightAdapter;
+  friend class MatrixAdapter;
 
   virtual void display() = 0;
   
@@ -33,4 +35,5 @@ protected:
   bool changed;
 
   LightAdapter* adapter;
+  bool externalAdapter;
 };

@@ -8,16 +8,24 @@ extern "C" {
   #include "mem.h"
 }
 
-Light::Light(const std::string& _name, uint16_t _count)
+Light::Light(const std::string& _name, uint16_t _count, LightAdapter* customAdapter)
   : name{_name}
   , colors(_count)
   , changed{true} {
 
-  adapter = new LightAdapter(*this, LightAdapter::Type::Linear);
+  externalAdapter = customAdapter != nullptr;
+  if(externalAdapter) {
+    adapter = customAdapter;
+  }
+  else {
+    adapter = new LightAdapter(*this);
+  }
 }
 
 Light::~Light() {
-  delete adapter;
+  if(!externalAdapter) {
+    delete adapter;
+  }
 }
 
 int Light::size() const {

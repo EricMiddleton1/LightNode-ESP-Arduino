@@ -1,5 +1,7 @@
 #include "RemoteUpdateEffect.h"
 
+#include <Arduino.h>
+
 
 RemoteUpdateEffect::RemoteUpdateEffect()
   : Effect("Remote Update", {LightAdapter::Type::Linear, LightAdapter::Type::Matrix}, 0) {

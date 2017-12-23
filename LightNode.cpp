@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 
+#include "MatrixAdapter.h"
 #include "SingleColorEffect.h"
 #include "RemoteUpdateEffect.h"
 
@@ -136,14 +137,40 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
       break;
   
       case PacketType::LightInfo: {
+        Serial.println("LightInfo");
         auto count = light.size();
         auto lightName = light.getName();
+        Serial.print(reinterpret_cast<int>(lightName.c_str()));
+        Serial.print(" - ");
+        Serial.print(lightName.c_str());
+        Serial.print(" (");
+        Serial.print(lightName.length());
+        Serial.println(" bytes)");
+        
         buffer[0] = 0;
         buffer[1] = static_cast<uint8_t>(PacketType::LightInfoResponse);
-        buffer[2] = (count >> 8) && 0xFF;
-        buffer[3] = count & 0xFF;
-        memcpy(buffer+4, lightName.c_str(), lightName.length());
-        packet.write(buffer, lightName.length() + 4);
+
+        if(adapter.type() == LightAdapter::Type::Linear) {
+          buffer[2] = 0;
+          buffer[3] = (count >> 8) && 0xFF;
+          buffer[4] = count & 0xFF;
+        }
+        else {
+          Serial.print("Casting adapter...");
+          auto& matrixAdapter = reinterpret_cast<MatrixAdapter&>(adapter);
+          Serial.println("done");
+
+          buffer[2] = 1;
+          Serial.print("Getting width and height...");
+          buffer[3] = matrixAdapter.getWidth();
+          buffer[4] = matrixAdapter.getHeight();
+          Serial.println("done");
+        }
+        Serial.print("Copying name into buffer...");
+        memcpy(buffer+5, lightName.c_str(), lightName.length());
+        Serial.println("done");
+        packet.write(buffer, lightName.length() + 5);
+        Serial.println("Done");
       }
       break;
   
@@ -215,7 +242,7 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
         }
         effect.update(periodHue, periodSat, periodVal);
       }
-      break;     
+      break;
     }
   }
 }
