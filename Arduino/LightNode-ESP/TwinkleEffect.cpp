@@ -7,18 +7,10 @@
 
 TwinkleEffect::TwinkleEffect()
   : Effect{"Twinkle", {LightAdapter::Type::Linear, LightAdapter::Type::Matrix}, UPDATE_PERIOD} {
-
-  Serial.print("new [vector] (");
-  Serial.print(sizeof(Twinkle)*twinkles.size());
-  Serial.println(" bytes)");
 }
 
 void TwinkleEffect::effectStart() {
   twinkles.resize(adapter->size());
-
-  Serial.print("new [vector resize] (");
-  Serial.print(sizeof(Twinkle)*twinkles.size());
-  Serial.println(" bytes)");
 
   auto curTime = millis();
   if(curTime < TWINKLE_PERIOD) {

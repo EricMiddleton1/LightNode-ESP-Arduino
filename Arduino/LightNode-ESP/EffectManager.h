@@ -3,6 +3,8 @@
 #include "Effect.h"
 #include "LightAdapter.h"
 
+#include <Arduino.h>
+
 extern "C" {
   #include "os_type.h"
 }
@@ -27,13 +29,14 @@ public:
   
   void addEffect(Effect& effect);
 
+  bool selectEffect(const String& name);
   void selectEffect(const iterator& itr);
 
   iterator getCurrentEffect();
   const_iterator getCurrentEffect() const;
 
-  iterator findEffect(const std::string& name);
-  const_iterator findEffect(const std::string& name) const;
+  iterator findEffect(const String& name);
+  const_iterator findEffect(const String& name) const;
 
   //-------------------------------------//
   //-------------Iterators---------------//

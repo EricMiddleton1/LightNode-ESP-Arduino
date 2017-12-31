@@ -2,15 +2,16 @@
 
 #include "LightAdapter.h"
 
-#include <string>
 #include <vector>
+
+#include <Arduino.h>
 
 class Effect {
 public:
-  Effect(const std::string& name, std::vector<LightAdapter::Type> supportedTypes, int updatePeriod);
+  Effect(const String& name, std::vector<LightAdapter::Type> supportedTypes, int updatePeriod);
   virtual ~Effect();
 
-  const std::string& getName() const;
+  const String& getName() const;
   const std::vector<LightAdapter::Type>& getSupportedTypes() const;
   int getUpdatePeriod() const;
   
@@ -25,7 +26,7 @@ public:
 protected:
   virtual void effectStart() = 0;
 
-  std::string name;
+  String name;
   std::vector<LightAdapter::Type> supportedTypes;
   int updatePeriod;
 

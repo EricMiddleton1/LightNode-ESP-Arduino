@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-Effect::Effect(const std::string& _name, std::vector<LightAdapter::Type> _supportedTypes, int _updatePeriod)
+Effect::Effect(const String& _name, std::vector<LightAdapter::Type> _supportedTypes, int _updatePeriod)
   : name{_name}
   , supportedTypes{std::move(_supportedTypes)}
   , updatePeriod{_updatePeriod}
@@ -18,7 +18,7 @@ Effect::Effect(const std::string& _name, std::vector<LightAdapter::Type> _suppor
 Effect::~Effect() {
 }
 
-const std::string& Effect::getName() const {
+const String& Effect::getName() const {
   return name;
 }
 

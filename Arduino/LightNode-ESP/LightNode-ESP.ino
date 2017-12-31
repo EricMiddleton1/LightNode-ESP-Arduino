@@ -1,5 +1,7 @@
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <ESPAsyncUDP.h>
+#include <ArduinoJson.h>
 
 #include "AnalogLight.h"
 #include "NeoPixelLight.h"
@@ -9,18 +11,28 @@
 #include "EffectManager.h"
 #include "SingleColorEffect.h"
 #include "RemoteUpdateEffect.h"
+#include "ColorFadeEffect.h"
 #include "TwinkleEffect.h"
+#include "StrobeEffect.h"
+#include "RandomColorEffect.h"
+
+#include "WebInterface.h"
 
 //AnalogLight analog{"Bedroom", 2, 4, 5};
-//NeoPixelLight digital("Test", 256, NeoPixelLight::ColorOrder::GRB);
-NeoPixelMatrix matrix("Test Matrix", 32, 8,
-  {PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
-Light* lights[] = {&matrix};
+NeoPixelLight digital("Test", 50, NeoPixelLight::ColorOrder::RGB);
+//NeoPixelMatrix matrix("Test Matrix", 32, 8,
+  //{PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
+Light* lights[] = {&digital};
 
 EffectManager effectManager{*lights[0]->getAdapter()};
 SingleColorEffect singleColorEffect;
 RemoteUpdateEffect remoteUpdateEffect;
+ColorFadeEffect colorFade;
 TwinkleEffect twinkleEffect;
+StrobeEffect strobeEffect;
+RandomColorEffect randomColorEffect;
+
+WebInterface interface(effectManager);
 
 LightNode* node;
 
@@ -29,7 +41,10 @@ void setup() {
 
   effectManager.addEffect(singleColorEffect);
   effectManager.addEffect(remoteUpdateEffect);
+  effectManager.addEffect(randomColorEffect);
+  effectManager.addEffect(colorFade);
   effectManager.addEffect(twinkleEffect);
+  effectManager.addEffect(strobeEffect);
 
   node = new LightNode("Outside", lights, 1, effectManager);
 
@@ -45,20 +60,23 @@ void setup() {
   Serial.println("done");
 
   Serial.println("Starting Matrix");
-  //digital.start();
-  matrix.start();
+  digital.start();
+  //matrix.start();
   Serial.println("Matrix started");
+
+  Serial.println("Starting WebInterface");
+  interface.begin();
+  Serial.println("WebInterface started");
 
   Serial.print("Starting LightNode...");
   node->begin();
   Serial.println("done");
-
-  //effectManager.selectEffect(effectManager.findEffect("Twinkle"));
 }
 
 unsigned long nextTime = 0;
 
 void loop() {
+  interface.run();
   node->run();
   
   auto curTime = millis();

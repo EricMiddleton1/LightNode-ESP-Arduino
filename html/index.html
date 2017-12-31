@@ -1,0 +1,122 @@
+<html>
+<head>
+<style>
+body {
+	background-color: OldLace;
+}
+h1 {
+	font-family: Arial;
+	font-size: 5vh;
+}
+a {
+	text-decoration: none;
+}
+table {
+	border-spacing: 3vh;
+	border: 0;
+	width: 100%;
+}
+.center {
+	text-align: center;
+	padding: 2vh;
+}
+.effect-active {
+	background-color: Blue;
+}
+.effect {
+	background-color: DodgerBlue;
+}
+.button {
+	color: white;
+	font-family: Arial;
+	font-size: 3vh;
+	border: 0;
+	border-radius: 1vh;
+}
+</style>
+<title>LightNode</title>
+<script type="text/javascript">
+function httpGetAsync(url, headers, callback) {
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function() {
+		if(xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status == 200)
+			callback(xmlHttp.responseText);
+	};
+	xmlHttp.open("GET", url, true);
+	xmlHttp.setRequestHeader("Cache-Control", "no-cache");
+	if(headers != null) {
+		for(i = 0; i < headers.length; i++) {
+			xmlHttp.setRequestHeader(headers[i].name, headers[i].value);
+		}
+	}
+
+	xmlHttp.send(null);
+}
+
+function loadEffectTable() {
+	console.log("loadEffectTable()");
+
+	httpGetAsync("effects", null, function(response) {
+		console.log("GET /effects callback");
+
+		var parsed = JSON.parse(response);
+		var table = document.getElementById("table-effects");
+		table.innerHTML = "";
+
+		for(i = 0; i < parsed.effects.length; i++) {
+			var name = parsed.effects[i];
+			console.log("Effect: " + name);
+
+			var tr = document.createElement("tr");
+			var td = document.createElement("td");
+			var a = document.createElement("a");
+			var div = document.createElement("div");
+			var text = document.createTextNode(name);
+
+			a.setAttribute("onclick", "selectEffect(this)");
+			a.setAttribute("href", "#");
+
+			div.setAttribute("class", (i == parsed.active) ? "effect-active button center"
+				: "effect button center");
+			
+			div.appendChild(text);
+			a.appendChild(div);
+			td.appendChild(a);
+			tr.appendChild(td);
+			table.appendChild(tr);
+		}
+
+	});
+}
+
+function selectEffect(element) {
+	var headers = [{
+		"name":"effect",
+		"value":element.childNodes[0].innerHTML
+	}];
+	console.log("selectEffect(): " + JSON.stringify(headers));
+
+	httpGetAsync("select_effect", headers, function(response) {
+		console.log(response);
+		var parsed = JSON.parse(response);
+		if(parsed.success != true) {
+			alert("Error: Failed to select effect");
+		}
+		else {
+			loadEffectTable();
+		}
+	});
+
+	return false;
+}
+
+</script>
+</head>
+
+<body onload="loadEffectTable()">
+<h1 class="center">Effects</h1>
+<table id="table-effects">
+</table>
+</body>
+
+</html>

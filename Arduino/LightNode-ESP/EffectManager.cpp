@@ -37,10 +37,18 @@ void EffectManager::addEffect(Effect& effect) {
   effects.push_back(&effect);
 }
 
+bool EffectManager::selectEffect(const String& name) {
+  auto found = findEffect(name);
+  if(found == end()) {
+    return false;
+  }
+  else {
+    selectEffect(found);
+    return true;
+  }
+}
+
 void EffectManager::selectEffect(const iterator& itr) {
-  Serial.println("EffectManager::selectEffect(): adapter=");
-  Serial.println(reinterpret_cast<unsigned int>(light), HEX);
-  
   effects[activeEffect]->stop();
 
   os_timer_disarm(&runTimer);
@@ -63,13 +71,13 @@ EffectManager::const_iterator EffectManager::getCurrentEffect() const {
   return effects.begin() + activeEffect;
 }
 
-EffectManager::iterator EffectManager::findEffect(const std::string& name) {
+EffectManager::iterator EffectManager::findEffect(const String& name) {
   return std::find_if(effects.begin(), effects.end(), [&name](const Effect* effect) {
     return effect->getName() == name;
     });
 }
 
-EffectManager::const_iterator EffectManager::findEffect(const std::string& name) const {
+EffectManager::const_iterator EffectManager::findEffect(const String& name) const {
   return std::find_if(effects.begin(), effects.end(), [&name](const Effect* effect) {
     return effect->getName() == name;
     });
