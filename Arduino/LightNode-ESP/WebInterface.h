@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ESP8266WebServer.h>
+#include <Arduino.h>
 
 class EffectManager;
 
@@ -8,7 +9,7 @@ class WebInterface {
 public:
   WebInterface(EffectManager& effectManager);
 
-  void begin();
+  void begin(const String& name);
   
   void run();
 

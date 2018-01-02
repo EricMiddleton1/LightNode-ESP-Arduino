@@ -15,14 +15,17 @@
 #include "TwinkleEffect.h"
 #include "StrobeEffect.h"
 #include "RandomColorEffect.h"
+#include "ColorWipeEffect.h"
 
 #include "WebInterface.h"
 
+char* NAME = "little-matrix";
+
 //AnalogLight analog{"Bedroom", 2, 4, 5};
-NeoPixelLight digital("Test", 50, NeoPixelLight::ColorOrder::RGB);
-//NeoPixelMatrix matrix("Test Matrix", 32, 8,
-  //{PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
-Light* lights[] = {&digital};
+//NeoPixelLight digital(NAME, 300, NeoPixelLight::ColorOrder::GRB);
+NeoPixelMatrix matrix(NAME, 32, 8,
+  {PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
+Light* lights[] = {&matrix};
 
 EffectManager effectManager{*lights[0]->getAdapter()};
 SingleColorEffect singleColorEffect;
@@ -31,6 +34,7 @@ ColorFadeEffect colorFade;
 TwinkleEffect twinkleEffect;
 StrobeEffect strobeEffect;
 RandomColorEffect randomColorEffect;
+ColorWipeEffect colorWipeEffect;
 
 WebInterface interface(effectManager);
 
@@ -43,15 +47,18 @@ void setup() {
   effectManager.addEffect(remoteUpdateEffect);
   effectManager.addEffect(randomColorEffect);
   effectManager.addEffect(colorFade);
+  effectManager.addEffect(colorWipeEffect);
   effectManager.addEffect(twinkleEffect);
   effectManager.addEffect(strobeEffect);
 
-  node = new LightNode("Outside", lights, 1, effectManager);
+  node = new LightNode(NAME, lights, 1, effectManager);
+
+  wifi_station_set_hostname(NAME);
 
   Serial.print("\nConnecting to AP");
   
-  //WiFi.begin("108net", "3ricn3t1");
-  WiFi.begin("Eric is Awesome", "ericeric");
+  WiFi.begin("108net", "3ricn3t1");
+  //WiFi.begin("Eric is Awesome", "ericeric");
 
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -60,17 +67,19 @@ void setup() {
   Serial.println("done");
 
   Serial.println("Starting Matrix");
-  digital.start();
-  //matrix.start();
+  //digital.start();
+  matrix.start();
   Serial.println("Matrix started");
 
   Serial.println("Starting WebInterface");
-  interface.begin();
+  interface.begin(NAME);
   Serial.println("WebInterface started");
 
   Serial.print("Starting LightNode...");
   node->begin();
   Serial.println("done");
+
+  effectManager.selectEffect("Off");
 }
 
 unsigned long nextTime = 0;

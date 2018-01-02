@@ -12,7 +12,7 @@ WebInterface::WebInterface(EffectManager& effectManager)
   , server{80} {
 }
 
-void WebInterface::begin() {
+void WebInterface::begin(const String& name) {
   server.on("/", HTTP_GET, [this]() {
     Serial.println("/");
 
@@ -68,6 +68,8 @@ void WebInterface::begin() {
   else {
     Serial.println("[Info] MDNS service started");
   }
+
+  WiFi.hostname(name);
 }
 
 void WebInterface::run() {

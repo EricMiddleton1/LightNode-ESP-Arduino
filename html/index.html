@@ -2,11 +2,88 @@
 <head>
 <style>
 body {
+	color: dimgray;
 	background-color: OldLace;
+	font-family: "Arial";
+}
+#menu_toggle {
+	display: block;
+	position: relative;
+	top: 50px;
+	left: 50px;
+	z-index: 1;
+	-webkit-user-select: none;
+	user-select: none;
+}
+#menu_toggle input {
+	display: block;
+	width: 40px;
+	height: 32px;
+	position: absolute;
+	top: -7px;
+	left: -5px;
+	cursor: pointer;
+	opacity: 0;
+	z-index: 2;
+	-webkit-touch-callout: none;
+}
+#menu_toggle span {
+	display: block;
+	width: 33px;
+	height: 4px;
+	margin-bottom: 5px;
+	position: relative;
+
+	background: dimgray;
+	border-radius: 3px;
+
+	z-index: 1;
+	transform-origin: 4px 0px;
+	transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+		background 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+		opacity 0.55s ease;
+}
+#menu_toggle span:first-child {
+	transform-origin: 0% 0%;
+}
+#menu_toggle span:nth-last-child(2) {
+	transform-origin: 0% 100%;
+}
+#menu_toggle input:checked ~ span {
+	opacity: 1;
+	transform: rotate(45deg) translate(-2px, -1px);
+	background: OldLace;
+}
+#menu_toggle input:checked ~ span:nth-last_child(3) {
+	opacity: 0;
+	transform: rotate(0deg) scale(0.2, 0.2);
+}
+#menu_toggle input:checked ~ span:nth-last-child(2) {
+	transform: rotate(-45deg) translate(0, -1px);
+}
+#menu {
+	position: absolute;
+	width: 300px;
+	margin: -100px 0 0 -50px;
+	padding: 50px;
+	padding-top: 125px;
+	background: dimgray;
+	list-style-type: none;
+	transform-origin: 0% 0%;
+	transform: translate(-100%, 0);
+	transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+}
+#menu li {
+	padding: 10px 0;
+	font-size: 22px;
+}
+#menu_toggle: input:checked ~ ul {
+	transform: none;
 }
 h1 {
 	font-family: Arial;
 	font-size: 5vh;
+	color: dimgray;
 }
 a {
 	text-decoration: none;
@@ -27,7 +104,7 @@ table {
 	background-color: DodgerBlue;
 }
 .button {
-	color: white;
+	color: OldLace;
 	font-family: Arial;
 	font-size: 3vh;
 	border: 0;
@@ -52,7 +129,6 @@ function httpGetAsync(url, headers, callback) {
 
 	xmlHttp.send(null);
 }
-
 function loadEffectTable() {
 	console.log("loadEffectTable()");
 
@@ -73,7 +149,7 @@ function loadEffectTable() {
 			var div = document.createElement("div");
 			var text = document.createTextNode(name);
 
-			a.setAttribute("onclick", "selectEffect(this)");
+			a.setAttribute("onclick", "return selectEffect(this)");
 			a.setAttribute("href", "#");
 
 			div.setAttribute("class", (i == parsed.active) ? "effect-active button center"
@@ -88,7 +164,6 @@ function loadEffectTable() {
 
 	});
 }
-
 function selectEffect(element) {
 	var headers = [{
 		"name":"effect",
@@ -109,14 +184,31 @@ function selectEffect(element) {
 
 	return false;
 }
-
 </script>
 </head>
 
 <body onload="loadEffectTable()">
-<h1 class="center">Effects</h1>
-<table id="table-effects">
-</table>
+<nav>
+<div id="menu_toggle">
+<input type="checkbox"/>
+<span></span>
+<span></span>
+<span></span>
+<ul id="menu">
+	<a href="#"><li>Home</li></a>
+	<a href="#"><li>Effects</li></a>
+</ul>
+</div>
+</nav>
+
+<div id="page_start">
+<h1 class="center">LightNode</h1>
+</div>
+<div id="page_effects" style="display:none">
+	<h1 class="center">Effects</h1>
+	<table id="table-effects">
+	</table>
+</div>
 </body>
 
 </html>

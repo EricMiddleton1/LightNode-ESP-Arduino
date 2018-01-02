@@ -137,26 +137,29 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
       break;
   
       case PacketType::LightInfo: {
-        auto count = light.size();
-        auto lightName = light.getName();
-        
-        buffer[0] = 0;
-        buffer[1] = static_cast<uint8_t>(PacketType::LightInfoResponse);
-
-        if(adapter.type() == LightAdapter::Type::Linear) {
-          buffer[2] = 0;
-          buffer[3] = (count >> 8) && 0xFF;
-          buffer[4] = count & 0xFF;
+        auto curEffect = manager.getCurrentEffect() - manager.begin();
+        if(curEffect == remoteUpdateEffect) {
+          auto count = light.size();
+          auto lightName = light.getName();
+          
+          buffer[0] = 0;
+          buffer[1] = static_cast<uint8_t>(PacketType::LightInfoResponse);
+  
+          if(adapter.type() == LightAdapter::Type::Linear) {
+            buffer[2] = 0;
+            buffer[3] = (count >> 8) && 0xFF;
+            buffer[4] = count & 0xFF;
+          }
+          else {
+            auto& matrixAdapter = reinterpret_cast<MatrixAdapter&>(adapter);
+  
+            buffer[2] = 1;
+            buffer[3] = matrixAdapter.getWidth();
+            buffer[4] = matrixAdapter.getHeight();
+          }
+          memcpy(buffer+5, lightName.c_str(), lightName.length());
+          packet.write(buffer, lightName.length() + 5);
         }
-        else {
-          auto& matrixAdapter = reinterpret_cast<MatrixAdapter&>(adapter);
-
-          buffer[2] = 1;
-          buffer[3] = matrixAdapter.getWidth();
-          buffer[4] = matrixAdapter.getHeight();
-        }
-        memcpy(buffer+5, lightName.c_str(), lightName.length());
-        packet.write(buffer, lightName.length() + 5);
       }
       break;
   
@@ -214,19 +217,21 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
         auto periodVal = data[2];
         
         auto curEffect = manager.getCurrentEffect() - manager.begin();
-        if(curEffect != remoteUpdateEffect) {
-          prevEffect = curEffect;
-          manager.selectEffect(manager.begin() + remoteUpdateEffect);
+        if(curEffect == remoteUpdateEffect) {
+          if(curEffect != remoteUpdateEffect) {
+            prevEffect = curEffect;
+            manager.selectEffect(manager.begin() + remoteUpdateEffect);
+          }
+          os_timer_disarm(&remoteTimer);
+          os_timer_arm(&remoteTimer, REMOTE_TIMEOUT, 0);
+          auto& effect = *static_cast<RemoteUpdateEffect*>(*manager.getCurrentEffect());
+  
+          for(int i = 0; i < effect.size(); ++i) {
+            auto index = 3*i + 3;
+            effect[i] = Color::HSV(data[index], data[index+1], data[index+2]);
+          }
+          effect.update(periodHue, periodSat, periodVal);
         }
-        os_timer_disarm(&remoteTimer);
-        os_timer_arm(&remoteTimer, REMOTE_TIMEOUT, 0);
-        auto& effect = *static_cast<RemoteUpdateEffect*>(*manager.getCurrentEffect());
-
-        for(int i = 0; i < effect.size(); ++i) {
-          auto index = 3*i + 3;
-          effect[i] = Color::HSV(data[index], data[index+1], data[index+2]);
-        }
-        effect.update(periodHue, periodSat, periodVal);
       }
       break;
     }
@@ -234,6 +239,9 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
 }
 
 void LightNode::cbRemoteTimer() {
-  manager.selectEffect(manager.begin() + prevEffect);
+  auto curEffect = manager.getCurrentEffect() - manager.begin();
+  if(curEffect == remoteUpdateEffect) {
+    manager.selectEffect(manager.begin() + prevEffect);
+  }
 }
 
