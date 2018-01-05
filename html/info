@@ -1,0 +1,17 @@
+{
+	"name":"Test Light",
+	"light":{
+		"driver":"WS2812b_RGB",
+		"count":100
+	},
+	"network":{
+		"mode":"STA",
+		"station":{
+			"ssid":"station_ssid",
+			"connected":false
+		},
+		"ap":{
+			"ssid":"ap_ssid"
+		}
+	}
+}	

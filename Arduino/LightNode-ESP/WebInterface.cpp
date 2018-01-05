@@ -25,7 +25,7 @@ void WebInterface::begin(const String& name) {
     server.send(200, "text/css", CSS::style);
   }
   */
-  server.on("/effects", HTTP_GET, [this]() {
+  server.on("/effects", [this]() {
     Serial.println("/effects");
     
     StaticJsonBuffer<500> response;
@@ -43,7 +43,7 @@ void WebInterface::begin(const String& name) {
     Serial.println(responseStr);
     server.send(200, "text/plain", responseStr);
   });
-  server.on("/select_effect", HTTP_GET, [this]() {
+  server.on("/select_effect", [this]() {
     Serial.println("/select_effect");
     bool success = false;
     if(server.hasHeader("effect")) {
@@ -57,10 +57,10 @@ void WebInterface::begin(const String& name) {
     server.send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
   });
 
-  const char * headers[] = {"effect"};
+  const char * headers[] = {"effect", "name", "light_driver", "light_count", "network_ssid", "network_psk"};
 
   server.begin();
-  server.collectHeaders(headers, 1);
+  server.collectHeaders(headers, sizeof(headers)/sizeof(headers[0]));
 
   if(!MDNS.begin("lightnode")) {
     Serial.println("[Error] Failed to start MDNS service");
@@ -68,8 +68,6 @@ void WebInterface::begin(const String& name) {
   else {
     Serial.println("[Info] MDNS service started");
   }
-
-  WiFi.hostname(name);
 }
 
 void WebInterface::run() {

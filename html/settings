@@ -1,0 +1,38 @@
+{
+	"name":"Test Light",
+	"light":{
+		"driver":{
+			"value":"WS2812b_GRB",
+			"options":["WS2812b_RGB", "WS2812b_GRB", "APA102", "Analog (PWM)"]
+		},
+		"layout":{
+			"value":"Strip",
+			"options":["Strip", "Matrix"]
+		},
+		"strip":{
+			"count":100
+		},
+		"matrix":{
+			"width":32,
+			"height":24,
+			"origin":{
+				"value":"Top Left",
+				"options":["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+			},
+			"stride":{
+				"value":"Columns",
+				"options":["Rows", "Columns"]
+			},
+			"stride order":{
+				"value":"ZigZag",
+				"options":["Progressive", "ZigZag"]
+			}
+		}
+	},
+	"network":{
+		"ssid":{
+			"value":"ssid_3",
+			"options":["ssid_1", "ssid_2", "ssid_3"]
+		}
+	}
+}

@@ -19,13 +19,13 @@
 
 #include "WebInterface.h"
 
-char* NAME = "little-matrix";
+char* NAME = "kitchen";
 
-//AnalogLight analog{"Bedroom", 2, 4, 5};
-//NeoPixelLight digital(NAME, 300, NeoPixelLight::ColorOrder::GRB);
-NeoPixelMatrix matrix(NAME, 32, 8,
-  {PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
-Light* lights[] = {&matrix};
+AnalogLight analog{NAME, 14, 12, 13};
+//NeoPixelLight digital(NAME, 100, NeoPixelLight::ColorOrder::RGB);
+//NeoPixelMatrix matrix(NAME, 32, 8,
+  //{PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
+Light* lights[] = {&analog};
 
 EffectManager effectManager{*lights[0]->getAdapter()};
 SingleColorEffect singleColorEffect;
@@ -41,6 +41,8 @@ WebInterface interface(effectManager);
 LightNode* node;
 
 void setup() {
+  wifi_station_set_hostname(NAME);
+  
   Serial.begin(115200);
 
   effectManager.addEffect(singleColorEffect);
@@ -52,8 +54,6 @@ void setup() {
   effectManager.addEffect(strobeEffect);
 
   node = new LightNode(NAME, lights, 1, effectManager);
-
-  wifi_station_set_hostname(NAME);
 
   Serial.print("\nConnecting to AP");
   
@@ -67,8 +67,9 @@ void setup() {
   Serial.println("done");
 
   Serial.println("Starting Matrix");
+  analog.start();
   //digital.start();
-  matrix.start();
+  //matrix.start();
   Serial.println("Matrix started");
 
   Serial.println("Starting WebInterface");
