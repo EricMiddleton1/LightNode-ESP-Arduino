@@ -4,13 +4,13 @@
 
 class Driver {
 public:
-  Driver(uint16_t count);
   virtual ~Driver();
 
-  uint16_t size() const;
-
-  virtual const Color& operator[](uint16_t index) const = 0;
-  virtual Color& operator[](uint16_t index) = 0;
+  virtual uint16_t size() const = 0;
+  
+  virtual Color getColor(uint16_t index) const = 0;
+  virtual void setColor(uint16_t index, const Color& c) = 0;
+  
   virtual void display() = 0;
 };
 

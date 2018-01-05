@@ -3,9 +3,13 @@
 #include <ESPAsyncUDP.h>
 #include <ArduinoJson.h>
 
-#include "AnalogLight.h"
-#include "NeoPixelLight.h"
-#include "NeoPixelMatrix.h"
+#include <memory>
+
+#include "Light.h"
+#include "AnalogDriver.h"
+#include "NeoPixelDriver.h"
+#include "LightAdapter.h"
+#include "MatrixAdapter.h"
 #include "LightNode.h"
 
 #include "EffectManager.h"
@@ -21,13 +25,20 @@
 
 char* NAME = "kitchen";
 
-AnalogLight analog{NAME, 14, 12, 13};
+/*
+Light light{NAME};
+AnalogDriver driver{14, 12, 13};
+LightAdapter adapter{&driver, LightAdapter::Type::Linear};
+Light* lights[] = {&light};
+
+
 //NeoPixelLight digital(NAME, 100, NeoPixelLight::ColorOrder::RGB);
 //NeoPixelMatrix matrix(NAME, 32, 8,
   //{PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
-Light* lights[] = {&analog};
+*/
 
-EffectManager effectManager{*lights[0]->getAdapter()};
+
+//EffectManager effectManager{*lights[0]->getAdapter()};
 SingleColorEffect singleColorEffect;
 RemoteUpdateEffect remoteUpdateEffect;
 ColorFadeEffect colorFade;
@@ -36,24 +47,36 @@ StrobeEffect strobeEffect;
 RandomColorEffect randomColorEffect;
 ColorWipeEffect colorWipeEffect;
 
-WebInterface interface(effectManager);
+//WebInterface interface(effectManager);
 
+Light* light;
+EffectManager* effectManager;
 LightNode* node;
+WebInterface* interface;
 
 void setup() {
   wifi_station_set_hostname(NAME);
   
   Serial.begin(115200);
 
-  effectManager.addEffect(singleColorEffect);
-  effectManager.addEffect(remoteUpdateEffect);
-  effectManager.addEffect(randomColorEffect);
-  effectManager.addEffect(colorFade);
-  effectManager.addEffect(colorWipeEffect);
-  effectManager.addEffect(twinkleEffect);
-  effectManager.addEffect(strobeEffect);
+  light = new Light{NAME};
+  //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
+  light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(100, NeoPixelDriver::ColorOrder::RGB)));
+  light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
 
-  node = new LightNode(NAME, lights, 1, effectManager);
+  effectManager = new EffectManager{*light->getAdapter()};
+  effectManager->addEffect(singleColorEffect);
+  effectManager->addEffect(remoteUpdateEffect);
+  effectManager->addEffect(randomColorEffect);
+  effectManager->addEffect(colorFade);
+  effectManager->addEffect(colorWipeEffect);
+  effectManager->addEffect(twinkleEffect);
+  effectManager->addEffect(strobeEffect);
+
+  Light* lights[] = {light};
+
+  node = new LightNode(NAME, lights, 1, *effectManager);
+  interface = new WebInterface(*effectManager);
 
   Serial.print("\nConnecting to AP");
   
@@ -66,28 +89,24 @@ void setup() {
   }
   Serial.println("done");
 
-  Serial.println("Starting Matrix");
-  analog.start();
-  //digital.start();
-  //matrix.start();
-  Serial.println("Matrix started");
-
   Serial.println("Starting WebInterface");
-  interface.begin(NAME);
+  interface->begin(NAME);
   Serial.println("WebInterface started");
 
   Serial.print("Starting LightNode...");
   node->begin();
   Serial.println("done");
 
-  effectManager.selectEffect("Off");
+  effectManager->selectEffect("Off");
 }
 
 unsigned long nextTime = 0;
 
 void loop() {
-  interface.run();
-  node->run();
+  interface->run();
+  //node->run();
+
+  light->run();
   
   auto curTime = millis();
   if(curTime >= nextTime) {

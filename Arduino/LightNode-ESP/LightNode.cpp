@@ -68,9 +68,11 @@ void LightNode::end() {
 }
 
 void LightNode::run() {
+/*
   for(int i = 0; i < lightCount; ++i) {
     lights[i]->update();
   }
+*/
 }
 
 bool LightNode::parsePacket(AsyncUDPPacket& packet, uint8_t& lightID, PacketType& type, uint8_t** data, int& length) {
@@ -139,7 +141,7 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
       case PacketType::LightInfo: {
         auto curEffect = manager.getCurrentEffect() - manager.begin();
         if(curEffect == remoteUpdateEffect) {
-          auto count = light.size();
+          auto count = adapter.size();
           auto lightName = light.getName();
           
           buffer[0] = 0;
@@ -206,7 +208,7 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
       break;
 
       case PacketType::UpdateColor: {
-        int requiredLength = 3 + 3*light.size();
+        int requiredLength = 3 + 3*adapter.size();
         if(length != requiredLength) {
           Serial.println("[Error] processPacket: Invalid size for UpdateColor");
           return;
@@ -228,7 +230,7 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
   
           for(int i = 0; i < effect.size(); ++i) {
             auto index = 3*i + 3;
-            effect[i] = Color::HSV(data[index], data[index+1], data[index+2]);
+            effect.setColor(i, Color::HSV(data[index], data[index+1], data[index+2]));
           }
           effect.update(periodHue, periodSat, periodVal);
         }

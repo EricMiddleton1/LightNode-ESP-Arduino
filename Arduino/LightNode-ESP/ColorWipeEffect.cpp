@@ -24,7 +24,7 @@ void ColorWipeEffect::run() {
   adapter->setAll(Color::HSV(hue, 255, 255));
   for(int i = 0; i < adapter->size(); ++i) {
     int pixelHue = hue + i*mult;
-    (*adapter)[i] = Color::HSV(pixelHue, 255, 255);
+    adapter->setColor(i, Color::HSV(pixelHue, 255, 255));
   }
 
   hue = fmod(hue + FADE_RATE*UPDATE_PERIOD/1000.f, 256.f); 

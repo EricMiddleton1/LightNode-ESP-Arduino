@@ -8,28 +8,15 @@ extern "C" {
   #include "mem.h"
 }
 
-Light::Light(const std::string& _name, uint16_t _count, LightAdapter* customAdapter)
-  : name{_name}
-  , colors(_count)
-  , changed{true} {
-
-  externalAdapter = customAdapter != nullptr;
-  if(externalAdapter) {
-    adapter = customAdapter;
-  }
-  else {
-    adapter = new LightAdapter(*this);
-  }
+Light::Light(const std::string& _name)
+  : name{_name} {
 }
 
 Light::~Light() {
-  if(!externalAdapter) {
-    delete adapter;
-  }
 }
 
-int Light::size() const {
-  return colors.size();
+Light::operator bool() const {
+  return driver && adapter;
 }
 
 std::string Light::getName() const {
@@ -37,13 +24,19 @@ std::string Light::getName() const {
 }
 
 LightAdapter* Light::getAdapter() {
-  return adapter;
+  return adapter.get();
 }
 
-void Light::update() {
-  if(changed) {
-    changed = false;
-    display();
-  }
+void Light::setDriver(std::unique_ptr<Driver>&& _driver) {
+  driver = std::move(_driver);
+}
+
+void Light::setAdapter(std::unique_ptr<LightAdapter>&& _adapter) {
+  adapter = std::move(_adapter);
+  adapter->replaceDriver(driver.get());
+}
+
+void Light::run() {
+  adapter->run();
 }
 

@@ -53,7 +53,7 @@ void TwinkleEffect::run() {
       value = 255*elapsed / (TWINKLE_PERIOD/2);
     }
 
-    (*adapter)[i] = Color::HSV(twinkles[i].hue, 255, value);
+    adapter->setColor(i, Color::HSV(twinkles[i].hue, 255, value));
   }
 }
 

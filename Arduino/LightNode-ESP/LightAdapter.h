@@ -2,7 +2,7 @@
 
 #include "Color.h"
 
-class Light;
+class Driver;
 
 class LightAdapter {
 public:
@@ -11,22 +11,27 @@ public:
     Matrix
   };
   
-  LightAdapter(Light& light, Type type = Type::Linear);
+  LightAdapter(Driver* driver, Type type = Type::Linear);
   virtual ~LightAdapter();
 
   Type type() const;
   
-  int size() const;
+  uint16_t size() const;
 
-  virtual Color& operator[](int index);
-  virtual const Color& operator[](int index) const;
+  Color getColor(uint16_t index) const;
+  void setColor(uint16_t index, const Color&);
 
   void setAll(const Color& c);
 
+  void replaceDriver(Driver* driver);
+
+  void run();
+
 protected:
-  Light& light;
+  Driver* driver;
 
 private:
   Type lightType;
+  bool changed;
 };
 
