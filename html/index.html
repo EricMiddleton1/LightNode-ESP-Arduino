@@ -212,11 +212,22 @@ function loadInfoTable() {
 		document.getElementById("info_light_driver").innerHTML = "Light Driver: " + parsed.light.driver;
 		document.getElementById("info_light_count").innerHTML = "Light Count: " + parsed.light.count;
 		document.getElementById("info_network_mode").innerHTML = "Network Mode: " + parsed.network.mode;
-		document.getElementById("info_ap_ssid").innerHTML = "AP SSID: " + parsed.network.ap.ssid;
-		document.getElementById("info_station_ssid").innerHTML = "Station SSID: " +
-			parsed.network.station.ssid;
-		document.getElementById("info_station_connected").innerHTML = "Station Connected: " +
-			(parsed.network.station.connected ? "True" : "False");
+		if(parsed.network.mode == "AP") {
+			document.getElementById("info_ap_ssid").style.display = "block";
+			document.getElementById("info_ap_ssid").innerHTML = "AP SSID: " + parsed.network.ap.ssid;
+			
+			document.getElementById("info_station_ssid").style.display = "none";
+			document.getElementById("info_station_connected").innerHTML = "Station Connected: False";
+		}
+		else {
+			document.getElementById("info_ap_ssid").style.display = "none";
+			document.getElementById("info_station_ssid").style.display = "block";
+
+			document.getElementById("info_station_ssid").innerHTML = "Station SSID: " +
+				parsed.network.station.ssid;
+			document.getElementById("info_station_connected").innerHTML = "Station Connected: " +
+				(parsed.network.station.connected ? "True" : "False");
+		}
 	});
 }
 function loadSettings() {

@@ -8,11 +8,11 @@
 
 SingleColorEffect::SingleColorEffect()
   : Effect("Single Color", {LightAdapter::Type::Linear, LightAdapter::Type::Matrix}, 0)
-  , isOn{false}
+  , isOn{true}
   , period{100}
   , hue{0}
   , sat{0}
-  , val{128} {
+  , val{255} {
 }
 
 void SingleColorEffect::transitionPeriod(uint8_t _period) {

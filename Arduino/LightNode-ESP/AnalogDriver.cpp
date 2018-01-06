@@ -3,7 +3,8 @@
 #include <Arduino.h>
 
 AnalogDriver::AnalogDriver(uint8_t _pinR, uint8_t _pinG, uint8_t _pinB)
-  : pinR{_pinR}
+  : Driver{"Analog (PWM)"}
+  , pinR{_pinR}
   , pinG{_pinG}
   , pinB{_pinB} {
 
@@ -33,8 +34,6 @@ void AnalogDriver::setColor(uint16_t index, const Color& _c) {
 }
 
 void AnalogDriver::display() {
-  Serial.println("[Info] AnalogDriver::display()");
-  
   setLED(pinR, c.getRed());
   setLED(pinG, c.getGreen());
   setLED(pinB, c.getBlue());

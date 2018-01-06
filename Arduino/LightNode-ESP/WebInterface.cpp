@@ -1,5 +1,6 @@
 #include "WebInterface.h"
 #include "EffectManager.h"
+#include "Light.h"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -7,8 +8,9 @@
 
 #include "html.h"
 
-WebInterface::WebInterface(EffectManager& effectManager)
+WebInterface::WebInterface(EffectManager& effectManager, Light& light)
   : effectManager_(effectManager)
+  , light_(light)
   , server{80} {
 }
 
@@ -23,6 +25,39 @@ void WebInterface::begin(const String& name) {
     Serial.println("/style.css");
 
     server.send(200, "text/css", CSS::style);
+  }
+  */
+  server.on("/info", [this]() {
+    Serial.println("/info");
+
+    StaticJsonBuffer<500> response;
+    JsonObject& root = response.createObject();
+    root["name"] = light_.getName();
+
+    JsonObject& light = root.createNestedObject("light");
+    light["driver"] = light_.getDriver()->name();
+    light["count"] = light_.getAdapter()->size();
+
+    JsonObject& network = root.createNestedObject("network");
+    network["mode"] = "STA";
+    JsonObject& station = network.createNestedObject("station");
+    station["ssid"] = WiFi.SSID();
+    station["connected"] = true;
+
+    String responseStr;
+    root.printTo(responseStr);
+    server.send(200, "text/plain", responseStr);
+  });
+  /*
+  server.on("/settings", [this]() {
+    Serial.println("/settings");
+
+    DynamicJsonBuffer response;
+    JsonObject& root = response.createObject();
+    root["name"] = light_.getName();
+
+    JsonObject& light = root.createNestedObject("light");
+    JsonObject& driver = root
   }
   */
   server.on("/effects", [this]() {

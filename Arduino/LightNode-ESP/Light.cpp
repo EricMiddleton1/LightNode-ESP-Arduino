@@ -8,7 +8,7 @@ extern "C" {
   #include "mem.h"
 }
 
-Light::Light(const std::string& _name)
+Light::Light(const String& _name)
   : name{_name} {
 }
 
@@ -19,12 +19,16 @@ Light::operator bool() const {
   return driver && adapter;
 }
 
-std::string Light::getName() const {
+String Light::getName() const {
   return name;
 }
 
 LightAdapter* Light::getAdapter() {
   return adapter.get();
+}
+
+const Driver* Light::getDriver() const {
+  return driver.get();
 }
 
 void Light::setDriver(std::unique_ptr<Driver>&& _driver) {

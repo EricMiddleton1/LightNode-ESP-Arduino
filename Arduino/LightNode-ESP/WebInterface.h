@@ -4,10 +4,11 @@
 #include <Arduino.h>
 
 class EffectManager;
+class Light;
 
 class WebInterface {
 public:
-  WebInterface(EffectManager& effectManager);
+  WebInterface(EffectManager& effectManager, Light& light);
 
   void begin(const String& name);
   
@@ -20,6 +21,7 @@ private:
   String getEffects() const;
 
   EffectManager& effectManager_;
+  Light& light_;
   ESP8266WebServer server;
 
   WiFiEventHandler connectHandler, disconnectHandler;

@@ -3,7 +3,8 @@
 #include <cmath>
 
 NeoPixelDriver::NeoPixelDriver(uint16_t _ledCount, ColorOrder _colorOrder)
-  : colorOrder{_colorOrder} {
+  : Driver{String("WS2812B_") + (_colorOrder == ColorOrder::RGB) ? "RGB" : "GRB"}
+  , colorOrder{_colorOrder} {
 
   switch(colorOrder) {
     case ColorOrder::RGB:

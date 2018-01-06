@@ -2,8 +2,9 @@
 
 #include <vector>
 #include <memory>
-#include <string>
 #include <cstdint>
+
+#include <Arduino.h>
 
 #include "LightAdapter.h"
 #include "Driver.h"
@@ -11,15 +12,16 @@
 
 class Light {
 public:
-  Light(const std::string& name);
+  Light(const String& name);
   ~Light();
   Light(const Light& other) = delete;
 
   operator bool() const;
 
-  std::string getName() const;
+  String getName() const;
 
   LightAdapter* getAdapter();
+  const Driver* getDriver() const;
 
   void setDriver(std::unique_ptr<Driver>&&);
   void setAdapter(std::unique_ptr<LightAdapter>&&);
@@ -30,7 +32,7 @@ protected:
   friend class LightAdapter;
   friend class MatrixAdapter;
   
-  std::string name;
+  String name;
 
   std::unique_ptr<LightAdapter> adapter;
   std::unique_ptr<Driver> driver;

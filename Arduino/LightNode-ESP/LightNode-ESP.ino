@@ -2,10 +2,12 @@
 #include <ESP8266mDNS.h>
 #include <ESPAsyncUDP.h>
 #include <ArduinoJson.h>
+#include <CapacitiveSensor.h>
 
 #include <memory>
 
 #include "Light.h"
+#include "WhiteDriver.h"
 #include "AnalogDriver.h"
 #include "NeoPixelDriver.h"
 #include "LightAdapter.h"
@@ -22,6 +24,8 @@
 #include "ColorWipeEffect.h"
 
 #include "WebInterface.h"
+#include "Button.h"
+#include "CapButton.h"
 
 char* NAME = "kitchen";
 
@@ -53,6 +57,7 @@ Light* light;
 EffectManager* effectManager;
 LightNode* node;
 WebInterface* interface;
+Button* button;
 
 void setup() {
   wifi_station_set_hostname(NAME);
@@ -61,7 +66,8 @@ void setup() {
 
   light = new Light{NAME};
   //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
-  light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(100, NeoPixelDriver::ColorOrder::RGB)));
+  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(100, NeoPixelDriver::ColorOrder::RGB)));
+  light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
   light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
 
   effectManager = new EffectManager{*light->getAdapter()};
@@ -76,7 +82,8 @@ void setup() {
   Light* lights[] = {light};
 
   node = new LightNode(NAME, lights, 1, *effectManager);
-  interface = new WebInterface(*effectManager);
+  button = new CapButton(*effectManager, "Single Color", 5, 4, {300, 75, 100});
+  interface = new WebInterface(*effectManager, *light);
 
   Serial.print("\nConnecting to AP");
   
@@ -103,16 +110,14 @@ void setup() {
 unsigned long nextTime = 0;
 
 void loop() {
+  auto curTime = millis();
+  
   interface->run();
-  //node->run();
 
   light->run();
-  
-  auto curTime = millis();
-  if(curTime >= nextTime) {
-    nextTime = curTime + 1000;
 
-    Serial.print("\t\t\t\t\t");
-    Serial.println(ESP.getFreeHeap());
+  if(curTime >= nextTime) {
+    nextTime = curTime + 10;
+    button->run();
   }
 }
