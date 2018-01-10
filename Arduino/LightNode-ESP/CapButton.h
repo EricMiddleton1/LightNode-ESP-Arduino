@@ -7,7 +7,7 @@
 class CapButton : public Button {
 public:
   struct Settings {
-    unsigned int pressThreshold, depressThreshold;
+    int pressThreshold, depressThreshold;
     unsigned int debounceTime;
   };
   
@@ -18,6 +18,7 @@ private:
   CapacitiveSensor sensor_;
   Settings settings_;
 
+  float filtered;
   bool pressed;
   unsigned long nextValidTime;
 };

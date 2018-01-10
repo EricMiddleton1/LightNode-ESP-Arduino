@@ -82,7 +82,7 @@ void setup() {
   Light* lights[] = {light};
 
   node = new LightNode(NAME, lights, 1, *effectManager);
-  button = new CapButton(*effectManager, "Single Color", 5, 4, {300, 75, 100});
+  button = new CapButton(*effectManager, "Single Color", 5, 4, {0, -1, 50});
   interface = new WebInterface(*effectManager, *light);
 
   Serial.print("\nConnecting to AP");
