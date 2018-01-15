@@ -7,8 +7,8 @@
 class CapButton : public Button {
 public:
   struct Settings {
-    int pressThreshold, depressThreshold;
-    unsigned int debounceTime;
+    int pressThreshold, depressThreshold, maxValue;
+    unsigned int changeCount, debounceTime;
   };
   
   CapButton(EffectManager& effectManager, const String& effect, uint8_t sendPin, uint8_t recvPin, Settings settings);
@@ -20,6 +20,7 @@ private:
 
   float filtered;
   bool pressed;
+  unsigned long changeCount;
   unsigned long nextValidTime;
 };
 
