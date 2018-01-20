@@ -12,6 +12,7 @@
 #include "WhiteDriver.h"
 #include "AnalogDriver.h"
 #include "NeoPixelDriver.h"
+#include "APA102Driver.h"
 #include "LightAdapter.h"
 #include "MatrixAdapter.h"
 #include "LightNode.h"
@@ -31,7 +32,7 @@
 
 #include "CapTouch.h"
 
-char* NAME = "Kitchen";
+char* NAME = "Lamp";
 const uint16_t DEBUG_PORT = 1234;
 
 /*
@@ -74,8 +75,10 @@ void setup() {
   light = new Light{NAME};
   //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
   //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(50, NeoPixelDriver::ColorOrder::RGB)));
-  light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
-  light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
+  //light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
+  light->setDriver(std::unique_ptr<Driver>(new APA102Driver(130)));
+  //light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
+  light->setAdapter(std::unique_ptr<LightAdapter>(new MatrixAdapter(nullptr, 10, 13, {PixelMapper::Stride::Rows, PixelMapper::StrideOrder::Progressive, PixelMapper::Start::BottomRight})));
 
   effectManager = new EffectManager{*light->getAdapter()};
   effectManager->addEffect(singleColorEffect);
