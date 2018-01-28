@@ -13,16 +13,10 @@ EffectManager::EffectManager(LightAdapter& _light)
   , activeEffect{0}
   , light{&_light} {
 
-  Serial.println("EffectManager(): adapter=");
-  Serial.println(reinterpret_cast<unsigned int>(light), HEX);
-
   os_timer_setfn(&runTimer, [](void* manager) { reinterpret_cast<EffectManager*>(manager)->cbRunTimer(); }, this);
 }
 
 void EffectManager::updateLight(LightAdapter& _light) {
-  Serial.println("Effect::size(): adapter=");
-  Serial.println(reinterpret_cast<unsigned int>(&_light), HEX);
-  
   light = &_light;
 
   effects[activeEffect]->stop();
@@ -30,10 +24,6 @@ void EffectManager::updateLight(LightAdapter& _light) {
 }
 
 void EffectManager::addEffect(Effect& effect) {
-  Serial.print("new [vector resize] (");
-  Serial.print(sizeof(Effect*)*effects.size());
-  Serial.println(" bytes)");
-  
   effects.push_back(&effect);
 }
 

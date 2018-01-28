@@ -108,6 +108,44 @@ h1 {
 a {
 	text-decoration: none;
 }
+.slidercontainer {
+	width: 50rem;
+	margin: auto;
+
+	border-style: solid;
+	border-width: 0.25rem;
+	border-radius: 1rem;
+	padding 10rem 0;
+}
+.slider-padding {
+	height: 3rem;
+}
+.slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 2rem;
+	background: grey;
+	outline: none;
+	opacity: 0.7;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+}
+.slider:hover {
+	opacity: 1;
+}
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 5rem;
+	height: 5rem;
+	border-radius: 50%;
+	background: DodgerBlue;
+	cursor: pointer;
+}
+.caption {
+	font-size: 3rem;
+}
 table {
 	border-spacing: 2rem;
 }
@@ -146,17 +184,6 @@ table.center {
 	font-size: 3rem;
 	color: OldLace;
 }
-#table-info table {
-	border: 0 solid DodgerBlue;
-	border-spacing: 0;
-	border-collapse: collapse;
-}
-#table-info tr {
-	background-color: darkslategray;
-}
-#table-info td {
-	width: 50rem;
-}
 .text_settings {
 	font-size: 3rem;
 }
@@ -172,11 +199,19 @@ table.center {
 <title>LightNode</title>
 <script type="text/javascript">
 var changed_settings;
-function httpAsync(verb, url, headers, callback) {
+var slider_update;
+var slider_changed;
+var slider_value;
+var slider_timer;
+function httpAsync(verb, url, headers, callback, failCallback) {
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function() {
-		if(xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status == 200)
-			callback(xmlHttp.responseText);
+		if(xmlHttp.readyState == XMLHttpRequest.DONE) {
+			if(xmlHttp.status == 200)
+				callback(xmlHttp.responseText);
+			else
+				failCallback(xmlHttp.status);
+		}
 	};
 	xmlHttp.open(verb, url, true);
 	xmlHttp.setRequestHeader("Cache-Control", "no-cache");
@@ -201,35 +236,6 @@ function loadSelect(element, values) {
 	}
 	element.value = values.value;
 }
-function loadInfoTable() {
-	httpAsync("GET", "info", null, function(response) {
-		var parsed = JSON.parse(response);
-
-		document.getElementById("home_name").innerHTML = parsed.name;
-
-		var table = document.getElementById("table-info");
-
-		document.getElementById("info_light_driver").innerHTML = "Light Driver: " + parsed.light.driver;
-		document.getElementById("info_light_count").innerHTML = "Light Count: " + parsed.light.count;
-		document.getElementById("info_network_mode").innerHTML = "Network Mode: " + parsed.network.mode;
-		if(parsed.network.mode == "AP") {
-			document.getElementById("info_ap_ssid").style.display = "block";
-			document.getElementById("info_ap_ssid").innerHTML = "AP SSID: " + parsed.network.ap.ssid;
-			
-			document.getElementById("info_station_ssid").style.display = "none";
-			document.getElementById("info_station_connected").innerHTML = "Station Connected: False";
-		}
-		else {
-			document.getElementById("info_ap_ssid").style.display = "none";
-			document.getElementById("info_station_ssid").style.display = "block";
-
-			document.getElementById("info_station_ssid").innerHTML = "Station SSID: " +
-				parsed.network.station.ssid;
-			document.getElementById("info_station_connected").innerHTML = "Station Connected: " +
-				(parsed.network.station.connected ? "True" : "False");
-		}
-	});
-}
 function loadSettings() {
 	httpAsync("GET", "settings", null, function(response) {
 		var parsed = JSON.parse(response);
@@ -242,8 +248,13 @@ function loadSettings() {
 		changed_settings = [];
 	});
 }
-function loadEffectTable() {
-	console.log("loadEffectTable()");
+function loadHomePage() {
+	console.log("loadHomePage()");
+
+	httpAsync("GET", "info", null, function(response) {
+		var parsed = JSON.parse(response);
+		document.getElementById("home_name").innerHTML = parsed.name;
+	});
 
 	httpAsync("GET", "effects", null, function(response) {
 		console.log("GET /effects callback");
@@ -274,7 +285,39 @@ function loadEffectTable() {
 			tr.appendChild(td);
 			table.appendChild(tr);
 		}
+		slider_defered = false;
+		document.getElementById("slider_brightness").value = parsed.brightness;
+	});
+}
+function onBrightnessChange() {
+	console.log("onBrightnessChange()");
+	slider_changed = true;
+	slider_value = document.getElementById("slider_brightness").value;
 
+	if(slider_defered == false) {
+		updateBrightness();
+	}
+}
+function updateBrightness() {
+	console.log("updateBrightness()");
+
+	slider_changed = false;
+	slider_defered = true;
+
+	httpAsync("GET", "set", [{"name":"brightness","value":slider_value}], function(response) {
+		console.log("/set callback");
+		slider_defered = false;
+		if(slider_changed == true) {
+			updateBrightness();
+		}
+	}, function(error) {
+		console.log("/set failCallback");
+		console.log(error);
+		
+		slider_defered = false;
+		if(slider_changed == true) {
+			updateBrightness();
+		}
 	});
 }
 function selectEffect(element) {
@@ -320,7 +363,7 @@ function show(id) {
 }
 function initPage(id) {
 	if(id == "page_home") {
-		loadInfoTable();
+		loadHomePage();
 	}
 	else if(id == "page_device_settings") {
 		loadSettings();
@@ -346,7 +389,7 @@ function onSettingChange(element) {
 }
 function submitSettings() {
 	if(changed_settings.length > 0) {
-		httpAsync("GET", "change_settings", changed_settings, function(response){});
+		httpAsync("GET", "set", changed_settings, function(response){});
 		console.log(changed_settings);
 		changed_settings = [];
 	}
@@ -365,32 +408,18 @@ function submitSettings() {
 <ul id="menu">
 	<a onclick="return show('page_home')" href="#"><li>Home</li></a>
 	<a onclick="return show('page_device_settings')" href="#"><li>Device Settings</li></a>
-	<a onclick="return show('page_effects')" href="#"><li>Effects</li></a>
 </ul>
 </div>
 </nav>
 
 <div id="page_home" class="page center" style="display:none">
 	<h1 id="home_name"></h1>
-	<table id="table-info" class="center">
-		<tr>
-			<td id="info_light_driver" class="center text_info"></td>
-		</tr>
-		<tr>
-			<td id="info_light_count" class="center text_info"></td>
-		</tr>
-		<tr>
-			<td id="info_network_mode" class="center text_info"></td>
-		</tr>
-		<tr>
-			<td id="info_ap_ssid" class="center text_info"></td>
-		</tr>
-		<tr>
-			<td id="info_station_ssid" class="center text_info"></td>
-		</tr>
-		<tr>
-			<td id="info_station_connected" class="center text_info"></td>
-		</tr>
+	<div class="slidercontainer center caption">
+		<p class="caption">Brightness</p>
+		<input type="range" min="1" max="255" value="255" class="slider" id="slider_brightness" oninput="onBrightnessChange()">
+		<div class="slider-padding"></div>
+	</div>
+	<table id="table-effects" class="center">
 	</table>
 </div>
 
@@ -475,12 +504,6 @@ function submitSettings() {
 			<div id="submit" class="button">Apply</div>
 		</a>
 	</div>
-</div>
-
-<div id="page_effects" class="page center" style="display:none">
-	<h1>Effects</h1>
-	<table id="table-effects" class="center">
-	</table>
 </div>
 
 </body>

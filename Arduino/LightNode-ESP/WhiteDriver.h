@@ -3,14 +3,20 @@
 
 #include "Driver.h"
 
+#include <NeoPixelBus.h>
+
 class WhiteDriver : public Driver {
 public:
   WhiteDriver(uint8_t pin);
   ~WhiteDriver();
 
   uint16_t size() const override;
-  Color getColor(uint16_t index) const override;
+
+  uint8_t getBrightness() const override;
+  void setBrightness(uint8_t brightness) override;
+  
   void setColor(uint16_t index, const Color& c) override;
+  
   void display() override;
   
 private:
@@ -18,5 +24,8 @@ private:
   
   uint8_t pin;
   Color c;
+  uint8_t brightness;
+
+  NeoGamma<NeoGammaTableMethod> gammaTable;
 };
 

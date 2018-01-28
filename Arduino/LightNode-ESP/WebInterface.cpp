@@ -70,6 +70,7 @@ void WebInterface::begin(const String& name) {
       effects.add(effect->getName().c_str());
     }
     root["active"] = effectManager_.getCurrentEffect() - effectManager_.begin();
+    root["brightness"] = light_.getAdapter()->getBrightness();
 
     String responseStr;
     root.printTo(responseStr);
@@ -91,8 +92,24 @@ void WebInterface::begin(const String& name) {
     }
     server.send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
   });
+  server.on("/set", [this]() {
+    Serial.println("/set");
+    bool success = false;
+    if(server.hasHeader("brightness")) {
+      auto brightness = server.header("brightness").toInt();
+      Serial.print("brightness: ");
+      Serial.println(brightness);
 
-  const char * headers[] = {"effect", "name", "light_driver", "light_count", "network_ssid", "network_psk"};
+      if(brightness > 0 && brightness < 256) {
+        light_.getAdapter()->setBrightness(brightness);
+        success = true;
+      }
+    }
+    Serial.println(success ? "Success" : "No success");
+    server.send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
+  });
+
+  const char * headers[] = {"effect", "brightness", "name", "light_driver", "light_count", "network_ssid", "network_psk"};
 
   server.begin();
   server.collectHeaders(headers, sizeof(headers)/sizeof(headers[0]));

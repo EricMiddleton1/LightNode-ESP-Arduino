@@ -9,10 +9,6 @@ Effect::Effect(const String& _name, std::vector<LightAdapter::Type> _supportedTy
   , supportedTypes{std::move(_supportedTypes)}
   , updatePeriod{_updatePeriod}
   , adapter{nullptr} {
-
-  Serial.print("new [vector] (");
-  Serial.print(sizeof(LightAdapter::Type)*supportedTypes.size());
-  Serial.println(" bytes)");
 }
 
 Effect::~Effect() {

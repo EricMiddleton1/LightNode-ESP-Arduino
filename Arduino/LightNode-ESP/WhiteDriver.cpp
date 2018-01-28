@@ -4,7 +4,8 @@
 
 WhiteDriver::WhiteDriver(uint8_t _pin)
   : Driver{"White"}
-  , pin{_pin} {
+  , pin{_pin}
+  , brightness{255} {
 
   pinMode(pin, OUTPUT);
 
@@ -19,8 +20,13 @@ uint16_t WhiteDriver::size() const {
   return 1;
 }
 
-Color WhiteDriver::getColor(uint16_t index) const {
-  return c;
+uint8_t WhiteDriver::getBrightness() const {
+  return brightness;
+}
+
+void WhiteDriver::setBrightness(uint8_t _brightness) {
+  brightness = _brightness;
+  display();
 }
 
 void WhiteDriver::setColor(uint16_t index, const Color& _c) {
@@ -28,10 +34,12 @@ void WhiteDriver::setColor(uint16_t index, const Color& _c) {
 }
 
 void WhiteDriver::display() {
-  setLED(pin, c.getVal());
+  auto corrected = gammaTable.Correct(RgbColor(c.getVal(), c.getVal(), c.getVal()));
+  
+  setLED(pin, corrected.R);
 }
 
 void WhiteDriver::setLED(uint8_t pin, uint8_t value) {
-  analogWrite(pin, (int)PWMRANGE * value / 255);
+  analogWrite(pin, (int)PWMRANGE * value * brightness / (255*255));
 }
 

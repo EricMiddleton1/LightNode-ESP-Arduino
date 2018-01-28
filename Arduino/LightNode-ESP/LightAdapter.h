@@ -18,7 +18,9 @@ public:
   
   uint16_t size() const;
 
-  Color getColor(uint16_t index) const;
+  uint8_t getBrightness() const;
+  void setBrightness(uint8_t brightness);
+
   void setColor(uint16_t index, const Color&);
 
   void setAll(const Color& c);

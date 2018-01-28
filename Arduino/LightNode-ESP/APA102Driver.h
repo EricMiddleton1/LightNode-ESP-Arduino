@@ -3,7 +3,7 @@
 
 #include "Driver.h"
 
-#include <NeoPixelBus.h>
+#include <NeoPixelBrightnessBus.h>
 
 class APA102Driver : public Driver {
 public:
@@ -11,16 +11,17 @@ public:
 
   uint16_t size() const override;
 
-  Color getColor(uint16_t index) const override;
+  void setBrightness(uint8_t brightness) override;
+  uint8_t getBrightness() const override;
+  
   void setColor(uint16_t index, const Color& c) override;
 
   void display() override;
 private:
   const float GAMMA = 2.2f;
 
-  NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> strip;
+  NeoPixelBrightnessBus<DotStarBgrFeature, DotStarSpiMethod> strip;
 
-  uint8_t gammaTable[256];
-
+  NeoGamma<NeoGammaTableMethod> gammaTable;
 };
 

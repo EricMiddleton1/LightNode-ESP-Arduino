@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
 #include <ESPAsyncUDP.h>
 #include <ArduinoJson.h>
-#include <CapacitiveSensor.h>
 
 #include <memory>
 
@@ -30,9 +30,7 @@
 #include "Button.h"
 #include "CapButton.h"
 
-#include "CapTouch.h"
-
-char* NAME = "Lamp";
+char* NAME = "TV";
 const uint16_t DEBUG_PORT = 1234;
 
 /*
@@ -64,21 +62,20 @@ LightNode* node;
 WebInterface* interface;
 Button* button = nullptr;
 
-CapTouch capTouch(5, 4, 1000);
-
 void setup() {
   wifi_station_set_hostname(NAME);
   
   Serial.begin(115200);
   DebugPort.begin(DEBUG_PORT);
+  ArduinoOTA.setHostname(NAME);
 
   light = new Light{NAME};
   //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
   //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(50, NeoPixelDriver::ColorOrder::RGB)));
-  //light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
-  light->setDriver(std::unique_ptr<Driver>(new APA102Driver(130)));
-  //light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
-  light->setAdapter(std::unique_ptr<LightAdapter>(new MatrixAdapter(nullptr, 10, 13, {PixelMapper::Stride::Rows, PixelMapper::StrideOrder::Progressive, PixelMapper::Start::BottomRight})));
+  light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
+  //light->setDriver(std::unique_ptr<Driver>(new APA102Driver(130)));
+  light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
+  //light->setAdapter(std::unique_ptr<LightAdapter>(new MatrixAdapter(nullptr, 10, 13, {PixelMapper::Stride::Rows, PixelMapper::StrideOrder::Progressive, PixelMapper::Start::BottomRight})));
 
   effectManager = new EffectManager{*light->getAdapter()};
   effectManager->addEffect(singleColorEffect);
@@ -96,7 +93,8 @@ void setup() {
   interface = new WebInterface(*effectManager, *light);
 
   Serial.print("\nConnecting to AP");
-  
+
+  WiFi.mode(WIFI_STA);
   WiFi.begin("108net", "3ricn3t1");
   //WiFi.begin("Eric is Awesome", "ericeric");
 
@@ -104,7 +102,8 @@ void setup() {
     delay(500);
     Serial.print('.');
   }
-  Serial.println("done");
+  Serial.print("done: ");
+  Serial.println(WiFi.localIP());
 
   Serial.println("Starting WebInterface");
   interface->begin(NAME);
@@ -115,8 +114,32 @@ void setup() {
   Serial.println("done");
 
   effectManager->selectEffect("Off");
+  
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+      type = "sketch";
+    else // U_SPIFFS
+      type = "filesystem";
 
-  capTouch.begin();
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
 }
 
 unsigned long nextTime = 0;
@@ -125,11 +148,13 @@ void loop() {
   auto curTime = millis();
   
   interface->run();
-
   light->run();
+  ArduinoOTA.handle();
 
   if(curTime >= nextTime) {
-    nextTime = curTime + 10;
+    nextTime = curTime + 1000;
+    Serial.print("\tFree: ");
+    Serial.println(ESP.getFreeHeap());
     if(button != nullptr) {
       button->run();
     }

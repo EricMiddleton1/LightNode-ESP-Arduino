@@ -23,7 +23,7 @@ public:
   uint8_t getHue() const;
   uint8_t getSat() const;
   uint8_t getVal() const;
-
+  
   Color filter(const Color&, double);
 
   void gammaCorrect(double gamma);

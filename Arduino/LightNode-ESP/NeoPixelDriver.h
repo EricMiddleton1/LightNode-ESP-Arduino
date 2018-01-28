@@ -5,7 +5,7 @@
 
 #include "Driver.h"
 
-#include <NeoPixelBus.h>
+#include <NeoPixelBrightnessBus.h>
 
 class NeoPixelDriver : public Driver {
 public:
@@ -19,7 +19,9 @@ public:
 
   uint16_t size() const override;
 
-  Color getColor(uint16_t index) const override;
+  uint8_t getBrightness() const override;
+  void setBrightness(uint8_t brightness) override;
+
   void setColor(uint16_t index, const Color& c) override;
 
   void display() override;
@@ -33,14 +35,18 @@ private:
   }
 
   template<typename Strip>
-  Color getColor(Strip* strip, uint16_t index) const {
-    auto color =  strip->GetPixelColor(index);
-    return {color.R, color.G, color.B};
+  uint8_t getBrightness(Strip* strip) const {
+    return strip->GetBrightness();
+  }
+
+  template<typename Strip>
+  void setBrightness(Strip* strip, uint8_t brightness) const {
+    strip->SetBrightness(brightness);
   }
 
   template<typename Strip>
   void setColor(Strip* strip, uint16_t index, const Color& c) {
-    strip->SetPixelColor(index, RgbColor(gammaTable[c.getRed()], gammaTable[c.getGreen()], gammaTable[c.getBlue()]));
+    strip->SetPixelColor(index, gammaTable.Correct(RgbColor(c.getRed(), c.getGreen(), c.getBlue())));
   }
 
   template<typename Strip>
@@ -49,11 +55,11 @@ private:
   }
 
   union {
-    NeoPixelBus<NeoRgbFeature, Neo800KbpsMethod>* rgb;
-    NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod>* grb;
+    NeoPixelBrightnessBus<NeoRgbFeature, Neo800KbpsMethod>* rgb;
+    NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod>* grb;
   } strip;
   ColorOrder colorOrder;
 
-  uint8_t gammaTable[256];
+  NeoGamma<NeoGammaTableMethod> gammaTable;
 };
 

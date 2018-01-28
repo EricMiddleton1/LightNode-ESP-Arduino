@@ -12,7 +12,6 @@ public:
   uint8_t getWidth() const;
   uint8_t getHeight() const;
 
-  Color getColor(uint8_t x, uint8_t y) const;
   void setColor(uint8_t x, uint8_t y, const Color& c);
   
 private:

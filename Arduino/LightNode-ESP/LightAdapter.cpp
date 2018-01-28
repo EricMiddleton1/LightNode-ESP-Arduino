@@ -24,8 +24,13 @@ uint16_t LightAdapter::size() const {
   }
 }
 
-Color LightAdapter::getColor(uint16_t index) const {
-  return driver->getColor(index);
+uint8_t LightAdapter::getBrightness() const {
+  return driver->getBrightness();
+}
+
+void LightAdapter::setBrightness(uint8_t brightness) {
+  driver->setBrightness(brightness);
+  changed = true;
 }
 
 void LightAdapter::setColor(uint16_t index, const Color& c) {

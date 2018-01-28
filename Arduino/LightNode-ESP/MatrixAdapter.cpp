@@ -22,10 +22,6 @@ uint8_t MatrixAdapter::getHeight() const {
   return height;
 }
 
-Color MatrixAdapter::getColor(uint8_t x, uint8_t y) const {
-  return driver->getColor(mapper.map(width, height, x, y));
-}
-
 void MatrixAdapter::setColor(uint8_t x, uint8_t y, const Color& c) {
   return driver->setColor(mapper.map(width, height, x, y), c);
 }
