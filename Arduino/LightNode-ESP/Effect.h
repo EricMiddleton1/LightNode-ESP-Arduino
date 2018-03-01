@@ -19,6 +19,12 @@ public:
 
   int size() const;
 
+  //--If child class has runtime parameters, ALL of the following methods must be overridden--//
+  virtual std::vector<String> params() const;
+  virtual String getParam(const String& param) const;
+  virtual void setParam(const String& param, const String& value);
+  //------------------------------------------------------------------------------------------//
+
   void start(LightAdapter& light);
   virtual void stop() = 0;
 

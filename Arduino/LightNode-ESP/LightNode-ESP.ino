@@ -18,7 +18,7 @@
 #include "LightNode.h"
 
 #include "EffectManager.h"
-#include "SingleColorEffect.h"
+#include "SolidColorEffect.h"
 #include "RemoteUpdateEffect.h"
 #include "ColorFadeEffect.h"
 #include "TwinkleEffect.h"
@@ -30,7 +30,7 @@
 #include "Button.h"
 #include "CapButton.h"
 
-char* NAME = "TV";
+char* NAME = "Work Light";
 const uint16_t DEBUG_PORT = 1234;
 
 /*
@@ -46,7 +46,7 @@ Light* lights[] = {&light};
 */
 
 //EffectManager effectManager{*lights[0]->getAdapter()};
-SingleColorEffect singleColorEffect;
+SolidColorEffect solidColorEffect;
 RemoteUpdateEffect remoteUpdateEffect;
 ColorFadeEffect colorFade;
 TwinkleEffect twinkleEffect;
@@ -71,14 +71,15 @@ void setup() {
 
   light = new Light{NAME};
   //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
-  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(50, NeoPixelDriver::ColorOrder::RGB)));
+  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(300, NeoPixelDriver::ColorOrder::GRBW)));
+  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(100, NeoPixelDriver::ColorOrder::RGB)));
   light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
   //light->setDriver(std::unique_ptr<Driver>(new APA102Driver(130)));
   light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
   //light->setAdapter(std::unique_ptr<LightAdapter>(new MatrixAdapter(nullptr, 10, 13, {PixelMapper::Stride::Rows, PixelMapper::StrideOrder::Progressive, PixelMapper::Start::BottomRight})));
 
   effectManager = new EffectManager{*light->getAdapter()};
-  effectManager->addEffect(singleColorEffect);
+  effectManager->addEffect(solidColorEffect);
   effectManager->addEffect(remoteUpdateEffect);
   effectManager->addEffect(randomColorEffect);
   effectManager->addEffect(colorFade);

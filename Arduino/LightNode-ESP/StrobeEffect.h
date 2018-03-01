@@ -14,7 +14,7 @@ public:
 
 private:
   static const int UPDATE_PERIOD = 20;
-  static const int STROBE_PERIOD = 5;
+  static const int STROBE_PERIOD = 10;
 
   unsigned int tick;
 };

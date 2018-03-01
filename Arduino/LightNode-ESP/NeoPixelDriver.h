@@ -11,7 +11,8 @@ class NeoPixelDriver : public Driver {
 public:
   enum class ColorOrder {
     RGB,
-    GRB
+    GRB,
+    GRBW
   };
 
   NeoPixelDriver(uint16_t ledCount, ColorOrder colorOrder = ColorOrder::GRB);
@@ -57,6 +58,7 @@ private:
   union {
     NeoPixelBrightnessBus<NeoRgbFeature, Neo800KbpsMethod>* rgb;
     NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod>* grb;
+    NeoPixelBrightnessBus<NeoGrbwFeature, Neo800KbpsMethod>* grbw;
   } strip;
   ColorOrder colorOrder;
 

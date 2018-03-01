@@ -56,7 +56,7 @@ private:
   int lightCount;
 
   EffectManager& manager;
-  int singleColorEffect;
+  int solidColorEffect;
   int remoteUpdateEffect;
   int prevEffect;
 

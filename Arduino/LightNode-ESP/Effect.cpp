@@ -32,6 +32,18 @@ bool Effect::isSupported(const LightAdapter& light) const {
   return found != supportedTypes.end();
 }
 
+std::vector<String> Effect::params() const {
+  return {};
+}
+
+String Effect::getParam(const String& param) const {
+  return "";
+}
+
+void Effect::setParam(const String& param, const String& value) {
+  
+}
+
 int Effect::size() const {
   return (adapter == nullptr) ? 0 : adapter->size();
 }

@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 #include "MatrixAdapter.h"
-#include "SingleColorEffect.h"
+#include "SolidColorEffect.h"
 #include "RemoteUpdateEffect.h"
 
 extern "C" {
@@ -26,13 +26,13 @@ LightNode::LightNode(const String& _name, Light* _lights[], int _lightCount, Eff
     lightUpdate[i] = false;
   }
 
-  auto found = manager.findEffect("Single Color");
+  auto found = manager.findEffect("Solid Color");
   if(found == manager.end()) {
-    Serial.println("[Error] LightNode: Failed to find 'Single Color' effect");
-    singleColorEffect = 0;
+    Serial.println("[Error] LightNode: Failed to find 'Solid Color' effect");
+    solidColorEffect = 0;
   }
   else {
-    singleColorEffect = found - manager.begin();
+    solidColorEffect = found - manager.begin();
   }
 
   found = manager.findEffect("Remote Update");
@@ -166,44 +166,40 @@ void LightNode::processPacket(AsyncUDPPacket packet) {
       break;
   
       case PacketType::TurnOn: {
-        manager.selectEffect(manager.begin() + singleColorEffect);
-        auto* effect = static_cast<SingleColorEffect*>(*manager.getCurrentEffect());
-        effect->transitionPeriod(data[0]);
-        effect->on(true);
+        manager.selectEffect(manager.begin() + solidColorEffect);
       }
       break;
 
       case PacketType::TurnOff: {
-        manager.selectEffect(manager.begin() + singleColorEffect);
-        auto* effect = static_cast<SingleColorEffect*>(*manager.getCurrentEffect());
-        effect->transitionPeriod(data[0]);
-        effect->on(false);
+        manager.selectEffect(manager.begin());
       }
       break;
 
       case PacketType::SetBrightness: {
-        manager.selectEffect(manager.begin() + singleColorEffect);
-        auto* effect = static_cast<SingleColorEffect*>(*manager.getCurrentEffect());
-        effect->transitionPeriod(data[0]);
-        effect->brightness(data[1]);
+        if(manager.getCurrentEffect() == manager.begin()) {
+          //Currently in "Off" effect
+          manager.selectEffect(manager.begin() + solidColorEffect);
+        }
+        adapter.setBrightness(data[1]);
       }
       break;
 
       case PacketType::SetColor: {
-        manager.selectEffect(manager.begin() + singleColorEffect);
-        auto* effect = static_cast<SingleColorEffect*>(*manager.getCurrentEffect());
-        effect->transitionPeriod(data[0]);
+        manager.selectEffect(manager.begin() + solidColorEffect);
+        auto* effect = static_cast<SolidColorEffect*>(*manager.getCurrentEffect());
         effect->color(data[1], data[2]);
       }
       break;
 
       case PacketType::ChangeBrightness: {
-        int delta = 255*static_cast<int>(static_cast<int8_t>(data[0]))/100;
-        
-        manager.selectEffect(manager.begin() + singleColorEffect);
-        auto* effect = static_cast<SingleColorEffect*>(*manager.getCurrentEffect());
-        effect->transitionPeriod(data[0]);
-        effect->changeBrightness(delta);
+        int delta = 255*static_cast<int>(static_cast<int8_t>(data[1]))/100;
+        uint8_t brightness = std::min(255, std::max(1, adapter.getBrightness() + delta));
+
+        if(manager.getCurrentEffect() == manager.begin()) {
+          //Currently in "Off" effect
+          manager.selectEffect(manager.begin() + solidColorEffect);
+        }
+        adapter.setBrightness(brightness);
       }
       break;
 
