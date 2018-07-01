@@ -14,7 +14,7 @@ public:
 
 private:
   static const int UPDATE_PERIOD = 20;
-  static const int FADE_RATE = 32;
+  static const int FADE_RATE = 64;
 
   float hue, mult;
 };

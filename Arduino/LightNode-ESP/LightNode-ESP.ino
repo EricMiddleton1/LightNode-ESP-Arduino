@@ -30,7 +30,7 @@
 #include "Button.h"
 #include "CapButton.h"
 
-char* NAME = "Work Light";
+char* NAME = "Kitchen";
 const uint16_t DEBUG_PORT = 1234;
 
 /*
@@ -71,10 +71,10 @@ void setup() {
 
   light = new Light{NAME};
   //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
-  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(300, NeoPixelDriver::ColorOrder::GRBW)));
-  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(100, NeoPixelDriver::ColorOrder::RGB)));
-  light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
-  //light->setDriver(std::unique_ptr<Driver>(new APA102Driver(130)));
+  light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(139, NeoPixelDriver::ColorOrder::GRBW))); //139 kitchen, 187 bathroom, 254 bedroom
+  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(300, NeoPixelDriver::ColorOrder::GRB)));
+  //light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
+  //light->setDriver(std::unique_ptr<Driver>(new APA102Driver(9)));
   light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
   //light->setAdapter(std::unique_ptr<LightAdapter>(new MatrixAdapter(nullptr, 10, 13, {PixelMapper::Stride::Rows, PixelMapper::StrideOrder::Progressive, PixelMapper::Start::BottomRight})));
 
@@ -85,7 +85,7 @@ void setup() {
   effectManager->addEffect(colorFade);
   effectManager->addEffect(colorWipeEffect);
   effectManager->addEffect(twinkleEffect);
-  effectManager->addEffect(strobeEffect);
+  //effectManager->addEffect(strobeEffect);
 
   Light* lights[] = {light};
 
@@ -93,11 +93,15 @@ void setup() {
   //button = new CapButton(*effectManager, "Single Color", 2, 1, {50, 10, 200, 5, 50});
   interface = new WebInterface(*effectManager, *light);
 
+/*
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(NAME, "diegolights");
+*/
+  
   Serial.print("\nConnecting to AP");
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin("108net", "3ricn3t1");
-  //WiFi.begin("Eric is Awesome", "ericeric");
+  WiFi.begin("", "");
 
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -105,6 +109,7 @@ void setup() {
   }
   Serial.print("done: ");
   Serial.println(WiFi.localIP());
+  
 
   Serial.println("Starting WebInterface");
   interface->begin(NAME);
@@ -148,7 +153,7 @@ unsigned long nextTime = 0;
 void loop() {
   auto curTime = millis();
   
-  interface->run();
+  //interface->run();
   light->run();
   ArduinoOTA.handle();
 

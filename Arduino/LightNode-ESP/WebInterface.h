@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ESP8266WebServer.h>
+#include <ESPAsyncWebServer.h>
 #include <Arduino.h>
 
 class EffectManager;
@@ -11,8 +11,6 @@ public:
   WebInterface(EffectManager& effectManager, Light& light);
 
   void begin(const String& name);
-  
-  void run();
 
 private:
   void cbWiFiConnect(const WiFiEventStationModeGotIP&);
@@ -22,7 +20,7 @@ private:
 
   EffectManager& effectManager_;
   Light& light_;
-  ESP8266WebServer server;
+  AsyncWebServer m_server;
 
   WiFiEventHandler connectHandler, disconnectHandler;
 };

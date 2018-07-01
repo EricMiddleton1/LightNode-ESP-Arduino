@@ -5,29 +5,20 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
-
-#include "html.h"
+#include <FS.h>
 
 WebInterface::WebInterface(EffectManager& effectManager, Light& light)
   : effectManager_(effectManager)
   , light_(light)
-  , server{80} {
+  , m_server{80} {
 }
 
 void WebInterface::begin(const String& name) {
-  server.on("/", HTTP_GET, [this]() {
-    Serial.println("/");
+  SPIFFS.begin();
 
-    server.send(200, "text/html", HTML::index);
-  });
-  /*
-  server.on("/style.css", HTTP_GET, [this]() {
-    Serial.println("/style.css");
+  m_server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html");
 
-    server.send(200, "text/css", CSS::style);
-  }
-  */
-  server.on("/info", [this]() {
+  m_server.on("/info", [this](AsyncWebServerRequest *request) {
     Serial.println("/info");
 
     StaticJsonBuffer<500> response;
@@ -46,21 +37,10 @@ void WebInterface::begin(const String& name) {
 
     String responseStr;
     root.printTo(responseStr);
-    server.send(200, "text/plain", responseStr);
+    request->send(200, "text/plain", responseStr);
   });
-  /*
-  server.on("/settings", [this]() {
-    Serial.println("/settings");
 
-    DynamicJsonBuffer response;
-    JsonObject& root = response.createObject();
-    root["name"] = light_.getName();
-
-    JsonObject& light = root.createNestedObject("light");
-    JsonObject& driver = root
-  }
-  */
-  server.on("/effects", [this]() {
+  m_server.on("/effects", [this](AsyncWebServerRequest *request) {
     Serial.println("/effects");
     
     StaticJsonBuffer<500> response;
@@ -77,26 +57,28 @@ void WebInterface::begin(const String& name) {
 
     Serial.print("Sending effects JSON object: ");
     Serial.println(responseStr);
-    server.send(200, "text/plain", responseStr);
+    request->send(200, "text/plain", responseStr);
   });
-  server.on("/select_effect", [this]() {
+
+  m_server.on("/select_effect", [this](AsyncWebServerRequest* request) {
     Serial.println("/select_effect");
     bool success = false;
-    if(server.hasHeader("effect")) {
-      auto effect = server.header("effect");
+    if(request->hasHeader("effect")) {
+      auto effect = request->getHeader("effect")->value();
       Serial.print("effect: ");
       Serial.println(effect);
       
       success = effectManager_.selectEffect(effect);
       Serial.println(success ? "Success" : "No success");
     }
-    server.send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
+    request->send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
   });
-  server.on("/set", [this]() {
+  
+  m_server.on("/set", [this](AsyncWebServerRequest* request) {
     Serial.println("/set");
     bool success = false;
-    if(server.hasHeader("brightness")) {
-      auto brightness = server.header("brightness").toInt();
+    if(request->hasHeader("brightness")) {
+      auto brightness = request->getHeader("brightness")->value().toInt();
       Serial.print("brightness: ");
       Serial.println(brightness);
 
@@ -106,13 +88,10 @@ void WebInterface::begin(const String& name) {
       }
     }
     Serial.println(success ? "Success" : "No success");
-    server.send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
+    request->send(200, "text/plain", String("{\"success\":") + (success ? "true" : "false") + "}");
   });
 
-  const char * headers[] = {"effect", "brightness", "name", "light_driver", "light_count", "network_ssid", "network_psk"};
-
-  server.begin();
-  server.collectHeaders(headers, sizeof(headers)/sizeof(headers[0]));
+  m_server.begin();
 
   if(!MDNS.begin("lightnode")) {
     Serial.println("[Error] Failed to start MDNS service");
@@ -120,9 +99,5 @@ void WebInterface::begin(const String& name) {
   else {
     Serial.println("[Info] MDNS service started");
   }
-}
-
-void WebInterface::run() {
-  server.handleClient();
 }
 

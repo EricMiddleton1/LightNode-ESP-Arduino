@@ -1,0 +1,510 @@
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  
+  background: OldLace;
+  color: darkslategray;
+  font-family: "Arial";
+}
+a {
+  text-decoration: none;
+  color: OldLace;
+  
+  transition: color 0.3s ease;
+}
+#menu_toggle {
+  display: block;
+  position: relative;
+  top: 3rem;
+  left: 3rem;
+  
+  z-index: 1;
+  
+  -webkit-user-select: none;
+  user-select: none;
+}
+#menu_toggle input {
+  display: block;
+  width: 8rem;
+  height: 6rem;
+  position: absolute;
+  top: -1.4rem;
+  left: -1rem;
+  
+  cursor: pointer;
+  
+  opacity: 0;
+  z-index: 2;
+  
+  -webkit-touch-callout: none;
+}
+#menu_toggle span {
+  display: block;
+  width: 6.6rem;
+  height: 0.8rem;
+  margin-bottom: 1rem;
+  position: relative;
+  
+  background: darkslategray;
+  border-radius: 0.6rem;
+  
+  z-index: 1;
+  
+  transform-origin: 0.8rem 0;
+  
+  transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+              background 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+              opacity 0.55s ease;
+}
+#menu_toggle span:first-child {
+  transform-origin: 0% 0%;
+}
+#menu_toggle span:nth-last-child(2) {
+  transform-origin: 0% 100%;
+}
+#menu_toggle input:checked ~ span {
+  opacity: 1;
+  transform: rotate(45deg) translate(-0.4rem, -0.2rem);
+  background: OldLace;
+}
+#menu_toggle input:checked ~ span:nth-last-child(3) {
+  opacity: 0;
+  transform: rotate(0deg) scale(0.2, 0.2);
+}
+#menu_toggle input:checked ~ span:nth-last-child(2) {
+  transform: rotate(-45deg) translate(0, -0.2rem);
+}
+#menu {
+  position: absolute;
+  width: 30rem;
+  margin: -20rem 0 0 -10rem;
+  padding: 10rem;
+  padding-top: 25rem;
+  
+  background: darkslategray;
+  list-style-type: none;
+  -webkit-font-smoothing: antialiased;
+  
+  transform-origin: 0% 0%;
+  transform: translate(-100%, 0);
+  
+  transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+}
+#menu li {
+  padding: 2rem 0;
+  font-size: 4rem;
+}
+#menu_toggle input:checked ~ ul {
+  transform: none;
+}
+h1 {
+	font-family: Arial;
+	font-size: 8rem;
+	color: darkslategray;
+}
+a {
+	text-decoration: none;
+}
+.slidercontainer {
+	width: 50rem;
+	margin: auto;
+
+	border-style: solid;
+	border-width: 0.25rem;
+	border-radius: 1rem;
+	padding 10rem 0;
+}
+.slider-padding {
+	height: 3rem;
+}
+.slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 2rem;
+	background: grey;
+	outline: none;
+	opacity: 0.7;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+}
+.slider:hover {
+	opacity: 1;
+}
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 5rem;
+	height: 5rem;
+	border-radius: 50%;
+	background: DodgerBlue;
+	cursor: pointer;
+}
+.caption {
+	font-size: 3rem;
+}
+table {
+	border-spacing: 2rem;
+}
+.center {
+	text-align: center;
+	padding: 1rem;
+}
+.left {
+	text-align: left;
+	padding: 1rem;
+}
+.right {
+	text-align: right;
+	padding: 1rem;
+}
+table.center {
+	margin-left: auto;
+	margin-right: auto;
+}
+.effect-active {
+	background-color: DodgerBlue;
+}
+.effect {
+	background-color: darkslategray;
+}
+.button {
+	color: OldLace;
+	font-family: Arial;
+	font-size: 4rem;
+	padding: 2rem;
+	border: 0;
+	border-radius: 2rem;
+	width: 50rem;
+}
+.text_info {
+	font-size: 3rem;
+	color: OldLace;
+}
+.text_settings {
+	font-size: 3rem;
+}
+#table-settings input, select {
+	width: 25rem;
+	font-size: 3rem;
+}
+#submit {
+	background-color: darkslategray;
+	text-align: center;
+}
+</style>
+<title>LightNode</title>
+<script type="text/javascript">
+var changed_settings;
+var slider_update;
+var slider_changed;
+var slider_value;
+var slider_timer;
+function httpAsync(verb, url, headers, callback, failCallback) {
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function() {
+		if(xmlHttp.readyState == XMLHttpRequest.DONE) {
+			if(xmlHttp.status == 200)
+				callback(xmlHttp.responseText);
+			else
+				failCallback(xmlHttp.status);
+		}
+	};
+	xmlHttp.open(verb, url, true);
+	xmlHttp.setRequestHeader("Cache-Control", "no-cache");
+	if(headers != null) {
+		for(i = 0; i < headers.length; i++) {
+			xmlHttp.setRequestHeader(headers[i].name, headers[i].value);
+		}
+	}
+
+	xmlHttp.send(null);
+}
+function loadSelect(element, values) {
+	element.innerHTML = "";
+
+	for(i = 0; i < values.options.length; i++) {
+		var option = document.createElement("option");
+		var text = document.createTextNode(values.options[i]);
+		
+		option.setAttribute("value", values.options[i]);
+		option.appendChild(text);
+		element.appendChild(option);
+	}
+	element.value = values.value;
+}
+function loadSettings() {
+	httpAsync("GET", "settings", null, function(response) {
+		var parsed = JSON.parse(response);
+
+		document.getElementById("settings_name").value = parsed.name;
+		document.getElementById("settings_light_count").value = parsed.light.strip.count.value;
+		loadSelect(document.getElementById("settings_light_driver"), parsed.light.driver);
+		loadSelect(document.getElementById("settings_network_ssid"), parsed.network.ssid);
+		
+		changed_settings = [];
+	});
+}
+function loadHomePage() {
+	console.log("loadHomePage()");
+
+	httpAsync("GET", "info", null, function(response) {
+		var parsed = JSON.parse(response);
+		document.getElementById("home_name").innerHTML = parsed.name;
+	});
+
+	httpAsync("GET", "effects", null, function(response) {
+		console.log("GET /effects callback");
+
+		var parsed = JSON.parse(response);
+		var table = document.getElementById("table-effects");
+		table.innerHTML = "";
+
+		for(i = 0; i < parsed.effects.length; i++) {
+			var name = parsed.effects[i];
+			console.log("Effect: " + name);
+
+			var tr = document.createElement("tr");
+			var td = document.createElement("td");
+			var a = document.createElement("a");
+			var div = document.createElement("div");
+			var text = document.createTextNode(name);
+
+			a.setAttribute("onclick", "return selectEffect(this)");
+			a.setAttribute("href", "#");
+
+			div.setAttribute("class", (i == parsed.active) ? "effect-active button center"
+				: "effect button center");
+			
+			div.appendChild(text);
+			a.appendChild(div);
+			td.appendChild(a);
+			tr.appendChild(td);
+			table.appendChild(tr);
+		}
+		slider_defered = false;
+		document.getElementById("slider_brightness").value = parsed.brightness;
+	});
+}
+function onBrightnessChange() {
+	console.log("onBrightnessChange()");
+	slider_changed = true;
+	slider_value = document.getElementById("slider_brightness").value;
+
+	if(slider_defered == false) {
+		updateBrightness();
+	}
+}
+function updateBrightness() {
+	console.log("updateBrightness()");
+
+	slider_changed = false;
+	slider_defered = true;
+
+	httpAsync("GET", "set", [{"name":"brightness","value":slider_value}], function(response) {
+		console.log("/set callback");
+		slider_defered = false;
+		if(slider_changed == true) {
+			updateBrightness();
+		}
+	}, function(error) {
+		console.log("/set failCallback");
+		console.log(error);
+		
+		slider_defered = false;
+		if(slider_changed == true) {
+			updateBrightness();
+		}
+	});
+}
+function selectEffect(element) {
+	var headers = [{
+		"name":"effect",
+		"value":element.childNodes[0].innerHTML
+	}];
+	console.log("selectEffect(): " + JSON.stringify(headers));
+
+	httpAsync("GET", "select_effect", headers, function(response) {
+		console.log(response);
+		var parsed = JSON.parse(response);
+		if(parsed.success != true) {
+			alert("Error: Failed to select effect");
+		}
+	});
+
+	var prevActive = document.getElementsByClassName("effect-active")[0];
+	prevActive.setAttribute("class", "effect button center");
+	element.childNodes[0].setAttribute("class", "effect-active button center");
+
+	return false;
+}
+function show(id) {
+	initPage(id);
+
+	var pages = document.getElementsByClassName("page");
+	for(i = 0; i < pages.length; i++) {
+		if(pages[i].id == id) {
+			pages[i].style.display = "block";
+		}
+		else if(pages[i].style.display == "block") {
+			pages[i].style.display = "none";
+		}
+	}
+	
+	var checkbox = document.getElementById("menu_checkbox");
+	if(checkbox.checked) {
+		checkbox.checked = false;
+	}
+
+	return false;
+}
+function initPage(id) {
+	if(id == "page_home") {
+		loadHomePage();
+	}
+	else if(id == "page_device_settings") {
+		loadSettings();
+	}
+	else if(id == "page_effects") {
+		loadEffectTable();
+	}
+}
+function onSettingChange(element) {
+	var alreadyChanged = false;
+	for(i = 0; i < changed_settings.length; i++) {
+		if(changed_settings[i].name == element.name) {
+			console.log("Updating existing value");
+			alreadyChanged = true;
+			changed_settings[i].value = element.value;
+			break;
+		}
+	}
+	if(!alreadyChanged) {
+		console.log("Updating new value");
+		changed_settings.push({"name":element.name, "value":element.value});
+	}
+}
+function submitSettings() {
+	if(changed_settings.length > 0) {
+		httpAsync("GET", "set", changed_settings, function(response){});
+		console.log(changed_settings);
+		changed_settings = [];
+	}
+	return false;
+}
+</script>
+</head>
+
+<body onload="show('page_home')">
+<nav>
+<div id="menu_toggle">
+<input id="menu_checkbox" type="checkbox"/>
+<span></span>
+<span></span>
+<span></span>
+<ul id="menu">
+	<a onclick="return show('page_home')" href="#"><li>Home</li></a>
+	<a onclick="return show('page_device_settings')" href="#"><li>Device Settings</li></a>
+</ul>
+</div>
+</nav>
+
+<div id="page_home" class="page center" style="display:none">
+	<h1 id="home_name"></h1>
+	<div class="slidercontainer center caption">
+		<p class="caption">Brightness</p>
+		<input type="range" min="1" max="255" value="255" class="slider" id="slider_brightness" oninput="onBrightnessChange()">
+		<div class="slider-padding"></div>
+	</div>
+	<table id="table-effects" class="center">
+	</table>
+</div>
+
+<div id="page_device_settings" class="page center" style="display:none">
+	<h1>Device Settings</h1>
+	<table id="table-settings" class="center">
+		<tr>
+			<td class="text_settings right">Name</td>
+			<td class="left">
+				<input id="settings_name" onchange="onSettingChange(this)" type="text" name="name">
+			</td>
+		</tr>
+		<tr>
+			<td class="text_settings right">Light Driver</td>
+			<td class="left">
+				<select id="settings_light_driver" onchange="onSettingChange(this)" name="light_driver">
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="text_settings right">Light Layout</td>
+			<td class="left">
+				<select id="settings_light_layout" onchange="onSettingChange(this)" name="light_layout">
+				</select>
+			</td>
+		</tr>
+		<tr class="strip">
+			<td class="text_settings right">Light Count</td>
+			<td class="left">
+				<input id="settings_light_count" onchange="onSettingChange(this)" name="light_count" type="number">
+			</td>
+		</tr>
+		<tr class="matrix">
+			<td class="text_settings right">Matrix Width</td>
+			<td class="left">
+				<input id="settings_matrix_width" onchange="onSettingChange(this)" name="matrix_width" type="number">
+			</td>
+		</tr>
+		<tr class"matrix">
+			<td class="text_settings right">Matrix Height</td>
+			<td class="left">
+				<input id="settings_matrix_height" onchange="onSettingChange(this)" name="matrix_height" type="number">
+			</td>
+		</tr>
+		<tr class="matrix">
+			<td class="text_settings right">Matrix Origin</td>
+			<td class="left">
+				<select id="settings_matrix_origin" onchange="onSettingChange(this)" name="matrix_origin">
+				</select>
+			</td>
+		</tr>
+		<tr class="matrix">
+			<td class="text_settings right">Matrix Stride</td>
+			<td class="left">
+				<select id="settings_matrix_stride" onchange="onSettingChange(this)" name="matrix_stride">
+				</select>
+			</td>
+		</tr>
+		<tr class="matrix">
+			<td class="text_settings right">Matrix Stride Order</td>
+			<td class="left">
+				<select id="settings_matrix_stride_order" onchange="onSettingChange(this)" name="matrix_stride_order">
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="text_settings right">WiFi SSID</td>
+			<td class="left">
+				<select id="settings_network_ssid" onchange="onSettingChange(this)" name="network_ssid">
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="text_settings right">WiFi Password</td>
+			<td class="left">
+				<input id="settings_network_password" onchange="onSettingChange(this)" type="password" name="network_psk">
+			</td>
+		</tr>
+	</table>
+	<div class="center">
+		<a onclick="return submitSettings()" href="#">
+			<div id="submit" class="button">Apply</div>
+		</a>
+	</div>
+</div>
+
+</body>
+</html>
