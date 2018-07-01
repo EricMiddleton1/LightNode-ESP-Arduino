@@ -27,11 +27,11 @@ LightAdapter* Light::getAdapter() {
   return adapter.get();
 }
 
-const Driver* Light::getDriver() const {
+const LightDriver* Light::getDriver() const {
   return driver.get();
 }
 
-void Light::setDriver(std::unique_ptr<Driver>&& _driver) {
+void Light::setDriver(std::unique_ptr<LightDriver>&& _driver) {
   driver = std::move(_driver);
 }
 

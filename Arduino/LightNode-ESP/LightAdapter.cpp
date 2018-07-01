@@ -1,8 +1,8 @@
 #include "LightAdapter.h"
 
-#include "Driver.h"
+#include "LightDriver.h"
 
-LightAdapter::LightAdapter(Driver* _driver, Type _type)
+LightAdapter::LightAdapter(LightDriver* _driver, Type _type)
   : driver(_driver)
   , lightType{_type}
   , changed{false} {
@@ -45,7 +45,7 @@ void LightAdapter::setAll(const Color& c) {
   changed = true;
 }
 
-void LightAdapter::replaceDriver(Driver* _driver) {
+void LightAdapter::replaceDriver(LightDriver* _driver) {
   driver = _driver;
 }
 

@@ -1,14 +1,17 @@
 #pragma once
 
 
-#include "Driver.h"
+#include "LightDriver.h"
 
 #include <NeoPixelBus.h>
 
-class WhiteDriver : public Driver {
+class WhiteDriver : public LightDriver {
 public:
   WhiteDriver(uint8_t pin);
+  WhiteDriver(const JsonObject& config);
   ~WhiteDriver();
+
+  void serialize(JsonObject& jsonConfig) const override;
 
   uint16_t size() const override;
 

@@ -3,11 +3,11 @@
 #include <memory>
 #include <cstdint>
 
-#include "Driver.h"
+#include "LightDriver.h"
 
 #include <NeoPixelBrightnessBus.h>
 
-class NeoPixelDriver : public Driver {
+class NeoPixelDriver : public LightDriver {
 public:
   enum class ColorOrder {
     RGB,
@@ -16,7 +16,10 @@ public:
   };
 
   NeoPixelDriver(uint16_t ledCount, ColorOrder colorOrder = ColorOrder::GRB);
+  NeoPixelDriver(const JsonObject& config);
   ~NeoPixelDriver();
+
+  void serialize(JsonObject& jsonConfig) const override;
 
   uint16_t size() const override;
 
@@ -29,6 +32,12 @@ public:
 
 private:
   const float GAMMA = 2.2f;
+
+  static String GetColorOrderString(ColorOrder order);
+  static ColorOrder GetColorOrder(String order);
+
+  static uint16_t getLedCount(const JsonObject& config);
+  static ColorOrder getColorOrder(const JsonObject& config);
 
   template<typename Strip>
   uint16_t size(Strip* strip) const {

@@ -1,13 +1,16 @@
 #pragma once
 
 
-#include "Driver.h"
+#include "LightDriver.h"
 
 #include <NeoPixelBrightnessBus.h>
 
-class APA102Driver : public Driver {
+class APA102Driver : public LightDriver {
 public:
   APA102Driver(uint16_t pixelDriver);
+  APA102Driver(const JsonObject& config);
+
+  void serialize(JsonObject& config) const override;
 
   uint16_t size() const override;
 

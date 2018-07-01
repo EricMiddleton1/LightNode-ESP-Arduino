@@ -1,14 +1,17 @@
 #pragma once
 
 
-#include "Driver.h"
+#include "LightDriver.h"
 
 #include <NeoPixelBus.h>
 
-class AnalogDriver : public Driver {
+class AnalogDriver : public LightDriver {
 public:
   AnalogDriver(uint8_t pinR, uint8_t pinG, uint8_t pinB);
+  AnalogDriver(const JsonObject& config);
   ~AnalogDriver();
+
+  void serialize(JsonObject& jsonConfig) const override;
 
   uint16_t size() const override;
 

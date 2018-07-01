@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 #include "LightAdapter.h"
-#include "Driver.h"
+#include "LightDriver.h"
 #include "Color.h"
 
 class Light {
@@ -21,9 +21,9 @@ public:
   String getName() const;
 
   LightAdapter* getAdapter();
-  const Driver* getDriver() const;
+  const LightDriver* getDriver() const;
 
-  void setDriver(std::unique_ptr<Driver>&&);
+  void setDriver(std::unique_ptr<LightDriver>&&);
   void setAdapter(std::unique_ptr<LightAdapter>&&);
 
   void run();
@@ -35,6 +35,6 @@ protected:
   String name;
 
   std::unique_ptr<LightAdapter> adapter;
-  std::unique_ptr<Driver> driver;
+  std::unique_ptr<LightDriver> driver;
 };
 

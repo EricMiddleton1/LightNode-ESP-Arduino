@@ -3,8 +3,11 @@
 #include <cmath>
 
 NeoPixelDriver::NeoPixelDriver(uint16_t _ledCount, ColorOrder _colorOrder)
-  : Driver{String("WS2812B_") + (_colorOrder == ColorOrder::RGB) ? "RGB" : "GRB"}
+  : LightDriver{"neopixel"}
   , colorOrder{_colorOrder} {
+
+  Serial.printf("[Info] NeoPixelDriver: LED Count=%d, ColorOrder=%s\n", (int)_ledCount,
+    GetColorOrderString(_colorOrder).c_str());
 
   switch(colorOrder) {
     case ColorOrder::RGB:
@@ -27,6 +30,10 @@ NeoPixelDriver::NeoPixelDriver(uint16_t _ledCount, ColorOrder _colorOrder)
   }
 }
 
+NeoPixelDriver::NeoPixelDriver(const JsonObject& config)
+  : NeoPixelDriver{config["count"], GetColorOrder(config["color_order"])} {
+}
+
 NeoPixelDriver::~NeoPixelDriver() {
   switch(colorOrder) {
     case ColorOrder::RGB:
@@ -41,6 +48,12 @@ NeoPixelDriver::~NeoPixelDriver() {
       delete strip.grbw;
     break;
   }
+}
+
+void NeoPixelDriver::serialize(JsonObject& jsonConfig) const {
+  jsonConfig["type"] = type();
+  jsonConfig["count"] = size();
+  jsonConfig["color_order"] = GetColorOrderString(colorOrder);
 }
 
 uint16_t NeoPixelDriver::size() const {
@@ -127,3 +140,37 @@ void NeoPixelDriver::display() {
   }
 }
 
+String NeoPixelDriver::GetColorOrderString(ColorOrder order) {
+  switch(order) {
+    case ColorOrder::RGB:
+      return "rgb";
+    break;
+
+    case ColorOrder::GRB:
+      return "grb";
+    break;
+
+    case ColorOrder::GRBW:
+      return "grbw";
+    break;
+  }
+}
+  
+NeoPixelDriver::ColorOrder NeoPixelDriver::GetColorOrder(String order) {
+  if(order == "rgb") {
+    return ColorOrder::RGB;
+  }
+  else if(order == "grb") {
+    return ColorOrder::GRB;
+  }
+  else if(order == "grbw") {
+    return ColorOrder::GRBW;
+  }
+  else {
+    Serial.printf("[Error] Unknown color order: %s\n",
+      order.c_str());
+
+    return ColorOrder::RGB;
+  }
+}
+  

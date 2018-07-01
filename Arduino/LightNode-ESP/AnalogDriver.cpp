@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 AnalogDriver::AnalogDriver(uint8_t _pinR, uint8_t _pinG, uint8_t _pinB)
-  : Driver{"Analog (PWM)"}
+  : LightDriver{"analog"}
   , pinR{_pinR}
   , pinG{_pinG}
   , pinB{_pinB}
@@ -16,10 +16,24 @@ AnalogDriver::AnalogDriver(uint8_t _pinR, uint8_t _pinG, uint8_t _pinB)
   display();
 }
 
+AnalogDriver::AnalogDriver(const JsonObject& config)
+  : AnalogDriver{
+    config["pin_r"].as<uint8_t>(),
+    config["pin_g"].as<uint8_t>(),
+    config["pin_b"].as<uint8_t>()
+  } {
+}
+
 AnalogDriver::~AnalogDriver() {
   digitalWrite(pinR, LOW);
   digitalWrite(pinG, LOW);
   digitalWrite(pinB, LOW);
+}
+
+void AnalogDriver::serialize(JsonObject& jsonConfig) const {
+  jsonConfig["pin_r"] = pinR;
+  jsonConfig["pin_g"] = pinG;
+  jsonConfig["pin_b"] = pinB;
 }
 
 uint16_t AnalogDriver::size() const {

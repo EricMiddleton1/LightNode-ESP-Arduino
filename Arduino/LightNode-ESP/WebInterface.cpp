@@ -13,9 +13,9 @@ WebInterface::WebInterface(EffectManager& effectManager, Light& light)
   , m_server{80} {
 }
 
-void WebInterface::begin(const String& name) {
-  SPIFFS.begin();
-
+void WebInterface::begin(const String& hostname) {
+  m_hostname = hostname;
+  
   m_server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html");
 
   m_server.on("/info", [this](AsyncWebServerRequest *request) {
@@ -26,7 +26,7 @@ void WebInterface::begin(const String& name) {
     root["name"] = light_.getName();
 
     JsonObject& light = root.createNestedObject("light");
-    light["driver"] = light_.getDriver()->name();
+    light["driver"] = light_.getDriver()->type();
     light["count"] = light_.getAdapter()->size();
 
     JsonObject& network = root.createNestedObject("network");
@@ -93,7 +93,7 @@ void WebInterface::begin(const String& name) {
 
   m_server.begin();
 
-  if(!MDNS.begin("lightnode")) {
+  if(!MDNS.begin(hostname.c_str())) {
     Serial.println("[Error] Failed to start MDNS service");
   }
   else {

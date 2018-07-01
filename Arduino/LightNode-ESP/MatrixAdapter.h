@@ -6,7 +6,7 @@
 
 class MatrixAdapter : public LightAdapter {
 public:
-  MatrixAdapter(Driver* driver, uint8_t width, uint8_t height, PixelMapper mapper);
+  MatrixAdapter(LightDriver* driver, uint8_t width, uint8_t height, PixelMapper mapper);
   ~MatrixAdapter();
 
   uint8_t getWidth() const;

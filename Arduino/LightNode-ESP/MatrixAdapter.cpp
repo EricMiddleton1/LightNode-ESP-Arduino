@@ -2,9 +2,9 @@
 
 #include <Arduino.h>
 
-#include "Driver.h"
+#include "LightDriver.h"
 
-MatrixAdapter::MatrixAdapter(Driver* _driver, uint8_t _width, uint8_t _height, PixelMapper _mapper)
+MatrixAdapter::MatrixAdapter(LightDriver* _driver, uint8_t _width, uint8_t _height, PixelMapper _mapper)
   : LightAdapter(_driver, Type::Matrix)
   , width{_width}
   , height{_height}

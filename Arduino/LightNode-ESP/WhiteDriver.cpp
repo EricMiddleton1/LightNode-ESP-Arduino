@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 WhiteDriver::WhiteDriver(uint8_t _pin)
-  : Driver{"White"}
+  : LightDriver{"white"}
   , pin{_pin}
   , brightness{255} {
 
@@ -12,8 +12,17 @@ WhiteDriver::WhiteDriver(uint8_t _pin)
   display();
 }
 
+WhiteDriver::WhiteDriver(const JsonObject& config)
+  : WhiteDriver{config["pin"].as<uint8_t>()} {
+}
+
 WhiteDriver::~WhiteDriver() {
   digitalWrite(pin, LOW);
+}
+
+void WhiteDriver::serialize(JsonObject& jsonConfig) const {
+  jsonConfig["type"] = type();
+  jsonConfig["pin"] = pin;
 }
 
 uint16_t WhiteDriver::size() const {

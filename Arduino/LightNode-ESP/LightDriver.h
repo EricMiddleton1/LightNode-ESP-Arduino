@@ -1,15 +1,21 @@
 #pragma once
 
+#include <memory>
+
+#include "ISerializable.h"
 #include "Color.h"
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
-class Driver {
+class LightDriver : public ISerializable {
 public:
-  Driver(const String& name);
-  virtual ~Driver();
+  LightDriver(const String& type);
+  virtual ~LightDriver();
 
-  String name() const;
+  static std::unique_ptr<LightDriver> Build(const JsonObject& config);
+
+  String type() const;
 
   virtual uint16_t size() const = 0;
 
@@ -20,6 +26,6 @@ public:
   
   virtual void display() = 0;
 private:
-  String name_;
+  String type_;
 };
 

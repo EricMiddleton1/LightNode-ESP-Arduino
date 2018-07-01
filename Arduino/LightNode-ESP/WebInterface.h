@@ -10,7 +10,7 @@ class WebInterface {
 public:
   WebInterface(EffectManager& effectManager, Light& light);
 
-  void begin(const String& name);
+  void begin(const String& hostname);
 
 private:
   void cbWiFiConnect(const WiFiEventStationModeGotIP&);
@@ -23,5 +23,7 @@ private:
   AsyncWebServer m_server;
 
   WiFiEventHandler connectHandler, disconnectHandler;
+
+  String m_hostname;
 };
 

@@ -4,13 +4,21 @@
 #include <cmath>
 
 APA102Driver::APA102Driver(uint16_t ledCount)
-  : Driver{"APA102"}
+  : LightDriver{"apa102"}
   , strip{ledCount} {
 
   strip.Begin();
   SPI.setFrequency(10000000L); //Default SPI frequency (20Mhz - set in strip.Begin()) is too high for my hardware (nodeMCU board + 2n7000 level shifter)
   
   strip.Show();
+}
+
+APA102Driver::APA102Driver(const JsonObject& config)
+  : APA102Driver{config["count"].as<uint16_t>()} {
+}
+
+void APA102Driver::serialize(JsonObject& config) const {
+  config["count"] = size();
 }
 
 uint16_t APA102Driver::size() const {

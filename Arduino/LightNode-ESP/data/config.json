@@ -1,0 +1,19 @@
+{
+  "name":"Bed",
+  "hostname":"bed",
+  "light":{
+    "driver":"white",
+    "pin":3
+  },
+  "network":{
+    "mode":"STA",
+    "station":{
+      "ssid":"station_ssid",
+      "psk":"station_psk"
+    },
+    "ap":{
+      "ssid":"ap_ssid",
+      "psk":"ap_psk"
+    }
+  }
+}

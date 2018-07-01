@@ -3,16 +3,20 @@
 #include <ArduinoOTA.h>
 #include <ESPAsyncUDP.h>
 #include <ArduinoJson.h>
+#include <FS.h>
 
 #include <memory>
 
+#include "ConfigFile.h"
 #include "DebugPort.h"
 
 #include "Light.h"
+#include "NeoPixelDriver.h"
+/*
 #include "WhiteDriver.h"
 #include "AnalogDriver.h"
-#include "NeoPixelDriver.h"
 #include "APA102Driver.h"
+*/
 #include "LightAdapter.h"
 #include "MatrixAdapter.h"
 #include "LightNode.h"
@@ -30,22 +34,8 @@
 #include "Button.h"
 #include "CapButton.h"
 
-char* NAME = "Kitchen";
 const uint16_t DEBUG_PORT = 1234;
 
-/*
-Light light{NAME};
-AnalogDriver driver{14, 12, 13};
-LightAdapter adapter{&driver, LightAdapter::Type::Linear};
-Light* lights[] = {&light};
-
-
-//NeoPixelLight digital(NAME, 100, NeoPixelLight::ColorOrder::RGB);
-//NeoPixelMatrix matrix(NAME, 32, 8,
-  //{PixelMapper::Stride::Columns, PixelMapper::StrideOrder::ZigZag, PixelMapper::Start::TopLeft});
-*/
-
-//EffectManager effectManager{*lights[0]->getAdapter()};
 SolidColorEffect solidColorEffect;
 RemoteUpdateEffect remoteUpdateEffect;
 ColorFadeEffect colorFade;
@@ -54,8 +44,6 @@ StrobeEffect strobeEffect;
 RandomColorEffect randomColorEffect;
 ColorWipeEffect colorWipeEffect;
 
-//WebInterface interface(effectManager);
-
 Light* light;
 EffectManager* effectManager;
 LightNode* node;
@@ -63,20 +51,29 @@ WebInterface* interface;
 Button* button = nullptr;
 
 void setup() {
-  wifi_station_set_hostname(NAME);
-  
   Serial.begin(115200);
-  DebugPort.begin(DEBUG_PORT);
-  ArduinoOTA.setHostname(NAME);
+  SPIFFS.begin();
 
-  light = new Light{NAME};
-  //light->setDriver(std::unique_ptr<Driver>(new AnalogDriver(14, 12, 13)));
-  light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(139, NeoPixelDriver::ColorOrder::GRBW))); //139 kitchen, 187 bathroom, 254 bedroom
-  //light->setDriver(std::unique_ptr<Driver>(new NeoPixelDriver(300, NeoPixelDriver::ColorOrder::GRB)));
-  //light->setDriver(std::unique_ptr<Driver>(new WhiteDriver(3)));
-  //light->setDriver(std::unique_ptr<Driver>(new APA102Driver(9)));
+  Serial.println("[Info] Loading config file...");
+  ConfigFile config;
+  Serial.println("[Info] Done loading config file");
+
+  auto& globalConfig = config.get();
+  auto& lightConfig = config.get("light");
+  String name = globalConfig["name"];
+  String hostname = globalConfig["hostname"];
+
+  Serial.printf("[Info] Light name=%s, hostname=%s\n", name.c_str(),
+    hostname.c_str());
+
+  wifi_station_set_hostname(const_cast<char*>(hostname.c_str()));
+  
+  DebugPort.begin(DEBUG_PORT);
+  ArduinoOTA.setHostname(name.c_str());
+
+  light = new Light(name);
+  light->setDriver(LightDriver::Build(lightConfig));
   light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
-  //light->setAdapter(std::unique_ptr<LightAdapter>(new MatrixAdapter(nullptr, 10, 13, {PixelMapper::Stride::Rows, PixelMapper::StrideOrder::Progressive, PixelMapper::Start::BottomRight})));
 
   effectManager = new EffectManager{*light->getAdapter()};
   effectManager->addEffect(solidColorEffect);
@@ -89,7 +86,7 @@ void setup() {
 
   Light* lights[] = {light};
 
-  node = new LightNode(NAME, lights, 1, *effectManager); //1, 2
+  node = new LightNode(name, lights, 1, *effectManager); //1, 2
   //button = new CapButton(*effectManager, "Single Color", 2, 1, {50, 10, 200, 5, 50});
   interface = new WebInterface(*effectManager, *light);
 
@@ -112,7 +109,7 @@ void setup() {
   
 
   Serial.println("Starting WebInterface");
-  interface->begin(NAME);
+  interface->begin(hostname);
   Serial.println("WebInterface started");
 
   Serial.print("Starting LightNode...");
