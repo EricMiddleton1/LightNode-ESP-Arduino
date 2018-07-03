@@ -30,7 +30,7 @@ AnalogDriver::~AnalogDriver() {
   digitalWrite(pinB, LOW);
 }
 
-void AnalogDriver::serialize(JsonObject& jsonConfig) const {
+void AnalogDriver::serializeThis(JsonObject& jsonConfig) const {
   jsonConfig["pin_r"] = pinR;
   jsonConfig["pin_g"] = pinG;
   jsonConfig["pin_b"] = pinB;

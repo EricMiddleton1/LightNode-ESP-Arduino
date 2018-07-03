@@ -20,7 +20,7 @@ WhiteDriver::~WhiteDriver() {
   digitalWrite(pin, LOW);
 }
 
-void WhiteDriver::serialize(JsonObject& jsonConfig) const {
+void WhiteDriver::serializeThis(JsonObject& jsonConfig) const {
   jsonConfig["type"] = type();
   jsonConfig["pin"] = pin;
 }

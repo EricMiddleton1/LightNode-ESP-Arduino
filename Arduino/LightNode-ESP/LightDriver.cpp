@@ -6,7 +6,7 @@
 #include "AnalogDriver.h"
 
 LightDriver::LightDriver(const String& type)
-  : type_{type} {
+  : Serializable{SerializedName} {
 }
 
 LightDriver::~LightDriver() {

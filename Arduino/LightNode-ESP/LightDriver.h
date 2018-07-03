@@ -2,13 +2,13 @@
 
 #include <memory>
 
-#include "ISerializable.h"
+#include "Serializable.h"
 #include "Color.h"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-class LightDriver : public ISerializable {
+class LightDriver : public Serializable {
 public:
   LightDriver(const String& type);
   virtual ~LightDriver();
@@ -26,6 +26,8 @@ public:
   
   virtual void display() = 0;
 private:
+  static constexpr char* SerializedName = "light";
+
   String type_;
 };
 

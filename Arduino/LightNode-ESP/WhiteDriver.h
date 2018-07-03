@@ -11,8 +11,6 @@ public:
   WhiteDriver(const JsonObject& config);
   ~WhiteDriver();
 
-  void serialize(JsonObject& jsonConfig) const override;
-
   uint16_t size() const override;
 
   uint8_t getBrightness() const override;
@@ -23,6 +21,8 @@ public:
   void display() override;
   
 private:
+  void serializeThis(JsonObject& jsonConfig) const override;
+
   void setLED(uint8_t pin, uint8_t value);
   
   uint8_t pin;

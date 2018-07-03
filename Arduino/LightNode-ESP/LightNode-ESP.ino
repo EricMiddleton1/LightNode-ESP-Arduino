@@ -98,7 +98,7 @@ void setup() {
   Serial.print("\nConnecting to AP");
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin("", "");
+  WiFi.begin("Linksys03492", "mvrmgxycwh");
 
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);

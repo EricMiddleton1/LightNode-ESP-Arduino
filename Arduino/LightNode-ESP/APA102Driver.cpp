@@ -17,7 +17,7 @@ APA102Driver::APA102Driver(const JsonObject& config)
   : APA102Driver{config["count"].as<uint16_t>()} {
 }
 
-void APA102Driver::serialize(JsonObject& config) const {
+void APA102Driver::serializeThis(JsonObject& config) const {
   config["count"] = size();
 }
 

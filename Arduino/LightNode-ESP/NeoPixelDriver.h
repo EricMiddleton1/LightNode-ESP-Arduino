@@ -19,8 +19,6 @@ public:
   NeoPixelDriver(const JsonObject& config);
   ~NeoPixelDriver();
 
-  void serialize(JsonObject& jsonConfig) const override;
-
   uint16_t size() const override;
 
   uint8_t getBrightness() const override;
@@ -32,6 +30,8 @@ public:
 
 private:
   const float GAMMA = 2.2f;
+
+  void serializeThis(JsonObject& jsonConfig) const override;
 
   static String GetColorOrderString(ColorOrder order);
   static ColorOrder GetColorOrder(String order);

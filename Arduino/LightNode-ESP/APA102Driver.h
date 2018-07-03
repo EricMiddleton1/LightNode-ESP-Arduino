@@ -10,8 +10,6 @@ public:
   APA102Driver(uint16_t pixelDriver);
   APA102Driver(const JsonObject& config);
 
-  void serialize(JsonObject& config) const override;
-
   uint16_t size() const override;
 
   void setBrightness(uint8_t brightness) override;
@@ -22,6 +20,8 @@ public:
   void display() override;
 private:
   const float GAMMA = 2.2f;
+
+  void serializeThis(JsonObject& config) const override;
 
   NeoPixelBrightnessBus<DotStarBgrFeature, DotStarSpiMethod> strip;
 

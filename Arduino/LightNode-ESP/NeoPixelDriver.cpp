@@ -50,7 +50,7 @@ NeoPixelDriver::~NeoPixelDriver() {
   }
 }
 
-void NeoPixelDriver::serialize(JsonObject& jsonConfig) const {
+void NeoPixelDriver::serializeThis(JsonObject& jsonConfig) const {
   jsonConfig["type"] = type();
   jsonConfig["count"] = size();
   jsonConfig["color_order"] = GetColorOrderString(colorOrder);
