@@ -1,14 +1,19 @@
 #include "LightAdapter.h"
-
 #include "LightDriver.h"
+#include "Light.h"
 
-LightAdapter::LightAdapter(LightDriver* _driver, Type _type)
-  : driver(_driver)
+LightAdapter::LightAdapter(Light* _light, LightDriver* _driver, Type _type)
+  : light(_light)
+  , driver(_driver)
   , lightType{_type}
   , changed{false} {
 }
 
 LightAdapter::~LightAdapter() {
+}
+
+String LightAdapter::name() const {
+  return light->getName();
 }
 
 LightAdapter::Type LightAdapter::type() const {

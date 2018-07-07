@@ -4,9 +4,10 @@
 #include "LightAdapter.h"
 #include "PixelMapper.h"
 
+
 class MatrixAdapter : public LightAdapter {
 public:
-  MatrixAdapter(LightDriver* driver, uint8_t width, uint8_t height, PixelMapper mapper);
+  MatrixAdapter(Light* light, LightDriver* driver, uint8_t width, uint8_t height, PixelMapper mapper);
   ~MatrixAdapter();
 
   uint8_t getWidth() const;

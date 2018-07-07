@@ -2,7 +2,10 @@
 
 #include "Color.h"
 
+#include <Arduino.h>
+
 class LightDriver;
+class Light;
 
 class LightAdapter {
 public:
@@ -11,8 +14,10 @@ public:
     Matrix
   };
   
-  LightAdapter(LightDriver* driver, Type type = Type::Linear);
+  LightAdapter(Light* light, LightDriver* driver, Type type = Type::Linear);
   virtual ~LightAdapter();
+
+  String name() const;
 
   Type type() const;
   
@@ -30,6 +35,7 @@ public:
   void run();
 
 protected:
+  Light* light;
   LightDriver* driver;
 
 private:

@@ -7,19 +7,16 @@
 
 #include <memory>
 
+extern "C" {
+ #include "user_interface.h"
+}
+
 #include "ConfigFile.h"
 #include "DebugPort.h"
 
 #include "Light.h"
-#include "NeoPixelDriver.h"
-/*
-#include "WhiteDriver.h"
-#include "AnalogDriver.h"
-#include "APA102Driver.h"
-*/
 #include "LightAdapter.h"
 #include "MatrixAdapter.h"
-#include "LightNode.h"
 
 #include "EffectManager.h"
 #include "SolidColorEffect.h"
@@ -46,7 +43,6 @@ ColorWipeEffect colorWipeEffect;
 
 Light* light;
 EffectManager* effectManager;
-LightNode* node;
 WebInterface* interface;
 Button* button = nullptr;
 
@@ -73,7 +69,7 @@ void setup() {
 
   light = new Light(name);
   light->setDriver(LightDriver::Build(lightConfig));
-  light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(nullptr)));
+  light->setAdapter(std::unique_ptr<LightAdapter>(new LightAdapter(light, nullptr)));
 
   effectManager = new EffectManager{*light->getAdapter()};
   effectManager->addEffect(solidColorEffect);
@@ -86,7 +82,6 @@ void setup() {
 
   Light* lights[] = {light};
 
-  node = new LightNode(name, lights, 1, *effectManager); //1, 2
   //button = new CapButton(*effectManager, "Single Color", 2, 1, {50, 10, 200, 5, 50});
   interface = new WebInterface(*effectManager, *light);
 
@@ -113,7 +108,6 @@ void setup() {
   Serial.println("WebInterface started");
 
   Serial.print("Starting LightNode...");
-  node->begin();
   Serial.println("done");
 
   effectManager->selectEffect("Off");

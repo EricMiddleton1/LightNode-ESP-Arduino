@@ -4,8 +4,8 @@
 
 #include "LightDriver.h"
 
-MatrixAdapter::MatrixAdapter(LightDriver* _driver, uint8_t _width, uint8_t _height, PixelMapper _mapper)
-  : LightAdapter(_driver, Type::Matrix)
+MatrixAdapter::MatrixAdapter(Light* _light, LightDriver* _driver, uint8_t _width, uint8_t _height, PixelMapper _mapper)
+  : LightAdapter(_light, _driver, Type::Matrix)
   , width{_width}
   , height{_height}
   , mapper{_mapper} {
