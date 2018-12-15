@@ -5,12 +5,18 @@
 
 #include <Arduino.h>
 
-TwinkleEffect::TwinkleEffect()
-  : Effect{"Twinkle", {LightAdapter::Type::Linear, LightAdapter::Type::Matrix}, UPDATE_PERIOD} {
+TwinkleEffect::TwinkleEffect(const String& name, int _twinkleSize, int _gapSize, const std::shared_ptr<IColorPalette>& palette)
+  : Effect{name, {LightAdapter::Type::Linear, LightAdapter::Type::Matrix}, UPDATE_PERIOD}
+  , twinkleSize{_twinkleSize}
+  , gapSize{_gapSize}
+  , m_palette{palette} {
 }
 
 void TwinkleEffect::effectStart() {
-  twinkles.resize(adapter->size());
+  adapter->setAll({});
+  
+  int stride = twinkleSize + gapSize;
+  twinkles.resize(adapter->size() / stride);
 
   auto curTime = millis();
   if(curTime < TWINKLE_PERIOD) {
@@ -19,7 +25,7 @@ void TwinkleEffect::effectStart() {
 
   for(int i = 0; i < twinkles.size(); ++i) {
     twinkles[i].time = curTime - i*TWINKLE_PERIOD/twinkles.size();
-    twinkles[i].hue = 85 * (rand() % 3);
+    twinkles[i].color = m_palette->getColor();
   }
 
   std::random_shuffle(twinkles.begin(), twinkles.end());
@@ -33,6 +39,8 @@ void TwinkleEffect::stop() {
 
 void TwinkleEffect::run() {
   auto curTime = millis();
+
+  int stride = twinkleSize + gapSize;
   
   for(int i = 0; i < twinkles.size(); ++i) {
     uint8_t value;
@@ -41,7 +49,7 @@ void TwinkleEffect::run() {
     
     if(elapsed >= TWINKLE_PERIOD) {
       twinkles[i].time += TWINKLE_PERIOD;
-      twinkles[i].hue = 85 * (rand() % 3);
+      twinkles[i].color = m_palette->getColor();
 
       elapsed -= TWINKLE_PERIOD;
     }
@@ -53,7 +61,15 @@ void TwinkleEffect::run() {
       value = 255*elapsed / (TWINKLE_PERIOD/2);
     }
 
-    adapter->setColor(i, Color::HSV(twinkles[i].hue, 255, value));
+    auto c = twinkles[i].color;
+    c.setRed((c.getRed() * value) / 255);
+    c.setGreen((c.getGreen() * value) / 255);
+    c.setBlue((c.getBlue() * value) / 255);
+
+    int offset = i*stride;
+    for(int j = 0; j < twinkleSize;  ++j) {
+      adapter->setColor(j+offset, c);
+    }
   }
 }
 

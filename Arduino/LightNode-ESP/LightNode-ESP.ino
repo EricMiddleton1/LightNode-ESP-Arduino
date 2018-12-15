@@ -18,6 +18,8 @@ extern "C" {
 #include "LightAdapter.h"
 #include "MatrixAdapter.h"
 
+#include "ColorSet.h"
+
 #include "EffectManager.h"
 #include "SolidColorEffect.h"
 #include "RemoteUpdateEffect.h"
@@ -26,6 +28,7 @@ extern "C" {
 #include "StrobeEffect.h"
 #include "RandomColorEffect.h"
 #include "ColorWipeEffect.h"
+#include "ColorWellEffect.h"
 
 #include "WebInterface.h"
 #include "Button.h"
@@ -33,13 +36,20 @@ extern "C" {
 
 const uint16_t DEBUG_PORT = 1234;
 
+std::shared_ptr<IColorPalette> christmasPalette = std::make_shared<ColorSet>(std::vector<Color>{ Color{255, 0, 0}, Color{0, 255, 0} }, true);
+std::shared_ptr<IColorPalette> whitePalette = std::make_shared<ColorSet>(std::vector<Color>{ Color{255, 255, 255} }, false);
+
 SolidColorEffect solidColorEffect;
 RemoteUpdateEffect remoteUpdateEffect;
 ColorFadeEffect colorFade;
-TwinkleEffect twinkleEffect;
+TwinkleEffect twinkleEffect("Twinkle", 1, 0, christmasPalette);
+TwinkleEffect christmasEffect("Christmas", 2, 4, christmasPalette);
+TwinkleEffect winterEffect("Winter", 2, 4, whitePalette);
 StrobeEffect strobeEffect;
 RandomColorEffect randomColorEffect;
 ColorWipeEffect colorWipeEffect;
+ColorWellEffect christmasSwoopEffect("Christmas Swoop", christmasPalette);
+ColorWellEffect winterSwoopEffect("Winter Swoop", whitePalette);
 
 Light* light;
 EffectManager* effectManager;
@@ -78,6 +88,10 @@ void setup() {
   effectManager->addEffect(colorFade);
   effectManager->addEffect(colorWipeEffect);
   effectManager->addEffect(twinkleEffect);
+  effectManager->addEffect(christmasEffect);
+  effectManager->addEffect(winterEffect);
+  effectManager->addEffect(christmasSwoopEffect);
+  effectManager->addEffect(winterSwoopEffect);
   //effectManager->addEffect(strobeEffect);
 
   Light* lights[] = {light};
@@ -93,7 +107,7 @@ void setup() {
   Serial.print("\nConnecting to AP");
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin("Linksys03492", "mvrmgxycwh");
+  WiFi.begin(AP, PSK);
 
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);

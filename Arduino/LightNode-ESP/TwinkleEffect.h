@@ -3,10 +3,13 @@
 #include "Effect.h"
 
 #include <vector>
+#include <memory>
+
+#include "IColorPalette.h"
 
 class TwinkleEffect : public Effect {
 public:
-  TwinkleEffect();
+  TwinkleEffect(const String& name, int twinkleSize, int gapSize, const std::shared_ptr<IColorPalette>& palette);
   
   void effectStart() override;
   void stop() override;
@@ -18,9 +21,11 @@ private:
 
   struct Twinkle {
     uint32_t time;
-    uint8_t hue;
+    Color color;
   };
 
+  int twinkleSize, gapSize;
+  std::shared_ptr<IColorPalette> m_palette;
   std::vector<Twinkle> twinkles;
 };
 

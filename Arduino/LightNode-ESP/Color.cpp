@@ -49,6 +49,18 @@ uint8_t Color::getBlue() const {
   return b;
 }
 
+void Color::setRed(uint8_t _r) {
+  r = _r;
+}
+
+void Color::setGreen(uint8_t _g) {
+  g = _g;
+}
+
+void Color::setBlue(uint8_t _b) {
+  b = _b;
+}
+
 Color Color::filter(const Color& other, double factor) {
   double invFactor = 1. - factor;
 
